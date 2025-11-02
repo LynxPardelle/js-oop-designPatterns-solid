@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Responsibility Principle - SOLID</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Single Responsibility Principle (SRP)</h1>
+        <p>A class should have only one reason to change</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="ocp.html">Open/Closed →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is the Single Responsibility Principle?</h2>
+            <p>The <strong>Single Responsibility Principle</strong> states that a class should have only one job or responsibility. This makes code more maintainable, testable, and reduces the impact of changes.</p>
+
+            <div class="example-bad">
+                <h4>❌ Violating SRP</h4>
+                <p>This class has multiple responsibilities:</p>
+                <div class="code-example">
+                    <pre>
+class User {
+    constructor(name, email) {
+        this.name = name;
+        this.email = email;
+    }
+
+    // Responsibility 1: User data management
+    getName() {
+        return this.name;
+    }
+
+    getEmail() {
+        return this.email;
+    }
+
+    // Responsibility 2: Database operations
+    save() {
+        console.log('Saving user to database...');
+        // Database logic
+    }
+
+    // Responsibility 3: Email sending
+    sendEmail(subject, message) {
+        console.log(`Sending email to ${this.email}`);
+        // Email logic
+    }
+
+    // Responsibility 4: Validation
+    validateEmail() {
+        return this.email.includes('@');
+    }
+}
+                    </pre>
+                </div>
+                <p>Problems: Mixing user data, database, email, and validation logic in one class.</p>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Following SRP</h4>
+                <p>Split responsibilities into separate classes:</p>
+                <div class="code-example">
+                    <pre>
+// Responsibility 1: User data management
+class User {
+    constructor(name, email) {
+        this.name = name;
+        this.email = email;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    getEmail() {
+        return this.email;
+    }
+}
+
+// Responsibility 2: Database operations
+class UserRepository {
+    save(user) {
+        console.log(`Saving ${user.getName()} to database...`);
+        // Database logic
+        return true;
+    }
+
+    findByEmail(email) {
+        console.log(`Finding user with email: ${email}`);
+        // Database logic
+        return null;
+    }
+}
+
+// Responsibility 3: Email sending
+class EmailService {
+    send(to, subject, message) {
+        console.log(`Sending email to ${to}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Message: ${message}`);
+        return true;
+    }
+}
+
+// Responsibility 4: Validation
+class EmailValidator {
+    validate(email) {
+        return email.includes('@') && email.includes('.');
+    }
+}
+
+// Usage
+const user = new User('John Doe', 'john@example.com');
+const repository = new UserRepository();
+const emailService = new EmailService();
+const validator = new EmailValidator();
+
+if (validator.validate(user.getEmail())) {
+    repository.save(user);
+    emailService.send(user.getEmail(), 'Welcome', 'Welcome to our app!');
+}
+                    </pre>
+                </div>
+                <p>Benefits: Each class has one clear responsibility and reason to change.</p>
+            </div>
+
+            <h3>Real-World Example: E-Commerce Order</h3>
+            <div class="code-example">
+                <pre>
+// Single responsibility: Order data
+class Order {
+    constructor(items, customer) {
+        this.items = items;
+        this.customer = customer;
+        this.date = new Date();
+    }
+
+    getTotal() {
+        return this.items.reduce((sum, item) => sum + item.price, 0);
+    }
+
+    getItems() {
+        return this.items;
+    }
+}
+
+// Single responsibility: Calculate prices
+class PriceCalculator {
+    calculate(order) {
+        const subtotal = order.getTotal();
+        const tax = subtotal * 0.1;
+        const total = subtotal + tax;
+        return { subtotal, tax, total };
+    }
+}
+
+// Single responsibility: Payment processing
+class PaymentProcessor {
+    process(order, paymentMethod) {
+        const prices = new PriceCalculator().calculate(order);
+        console.log(`Processing ${paymentMethod} payment of $${prices.total}`);
+        return true;
+    }
+}
+
+// Single responsibility: Order notifications
+class OrderNotifier {
+    notify(order) {
+        console.log(`Notifying ${order.customer.email} about order`);
+        return true;
+    }
+}
+
+// Usage
+const order = new Order(
+    [{ name: 'Book', price: 20 }, { name: 'Pen', price: 5 }],
+    { name: 'Alice', email: 'alice@example.com' }
+);
+
+const calculator = new PriceCalculator();
+const processor = new PaymentProcessor();
+const notifier = new OrderNotifier();
+
+const prices = calculator.calculate(order);
+console.log(`Order total: $${prices.total}`);
+
+if (processor.process(order, 'Credit Card')) {
+    notifier.notify(order);
+}
+                </pre>
+            </div>
+
+            <h3>Benefits of SRP</h3>
+            <ul>
+                <li><strong>Easier Testing:</strong> Each class has a focused purpose</li>
+                <li><strong>Better Organization:</strong> Code is more organized and readable</li>
+                <li><strong>Reduced Coupling:</strong> Classes are less dependent on each other</li>
+                <li><strong>Easier Maintenance:</strong> Changes affect fewer parts of the code</li>
+            </ul>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>See SRP in action with a user management system:</p>
+                <input type="text" id="userName" placeholder="Name" />
+                <input type="email" id="userEmail" placeholder="Email" />
+                <button class="btn" onclick="createUser()">Create User</button>
+                <div class="demo-output" id="userOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Refactor a Bloated Class</h3>
+            <p>Refactor this class that violates SRP:</p>
+            <div class="code-example">
+                <pre>
+class BlogPost {
+    constructor(title, content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    // Mixed responsibilities
+    save() { /* DB logic */ }
+    display() { /* HTML rendering */ }
+    sendNotification() { /* Email logic */ }
+    validateContent() { /* Validation logic */ }
+}
+                </pre>
+            </div>
+            <p>Split into separate classes following SRP.</p>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+// Responsibility: Blog post data
+class BlogPost {
+    constructor(title, content) {
+        this.title = title;
+        this.content = content;
+    }
+
+    getTitle() {
+        return this.title;
+    }
+
+    getContent() {
+        return this.content;
+    }
+}
+
+// Responsibility: Database operations
+class BlogPostRepository {
+    save(post) {
+        console.log(`Saving post: ${post.getTitle()}`);
+        // Database logic
+    }
+
+    findById(id) {
+        // Database logic
+    }
+}
+
+// Responsibility: Display/Rendering
+class BlogPostRenderer {
+    render(post) {
+        return `
+            &lt;article&gt;
+                &lt;h1&gt;${post.getTitle()}&lt;/h1&gt;
+                &lt;p&gt;${post.getContent()}&lt;/p&gt;
+            &lt;/article&gt;
+        `;
+    }
+}
+
+// Responsibility: Notifications
+class BlogPostNotifier {
+    notify(post, subscribers) {
+        console.log(`Notifying subscribers about: ${post.getTitle()}`);
+        // Email logic
+    }
+}
+
+// Responsibility: Validation
+class BlogPostValidator {
+    validate(post) {
+        return post.getTitle().length > 0 && 
+               post.getContent().length > 10;
+    }
+}
+
+// Usage
+const post = new BlogPost('My Title', 'My content here...');
+const repository = new BlogPostRepository();
+const renderer = new BlogPostRenderer();
+const notifier = new BlogPostNotifier();
+const validator = new BlogPostValidator();
+
+if (validator.validate(post)) {
+    repository.save(post);
+    console.log(renderer.render(post));
+    notifier.notify(post, ['user1@example.com']);
+}
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="ocp.html">Open/Closed →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class User {
+            constructor(name, email) {
+                this.name = name;
+                this.email = email;
+            }
+            getName() { return this.name; }
+            getEmail() { return this.email; }
+        }
+
+        class EmailValidator {
+            validate(email) {
+                return email.includes('@') && email.includes('.');
+            }
+        }
+
+        class UserRepository {
+            save(user) {
+                return `✓ User ${user.getName()} saved to database`;
+            }
+        }
+
+        class EmailService {
+            send(to, subject) {
+                return `✓ Welcome email sent to ${to}`;
+            }
+        }
+
+        function createUser() {
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+
+            if (!name || !email) {
+                document.getElementById('userOutput').innerHTML = 'Please fill all fields!';
+                return;
+            }
+
+            const validator = new EmailValidator();
+            const user = new User(name, email);
+            const repository = new UserRepository();
+            const emailService = new EmailService();
+
+            if (!validator.validate(email)) {
+                document.getElementById('userOutput').innerHTML = '❌ Invalid email format';
+                return;
+            }
+
+            const results = [];
+            results.push(repository.save(user));
+            results.push(emailService.send(email, 'Welcome'));
+            
+            document.getElementById('userOutput').innerHTML = 
+                'Following SRP - Each class has one responsibility:<br>' + 
+                results.join('<br>');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creational Patterns - Design Patterns</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Creational Design Patterns</h1>
+        <p>Patterns for creating objects in a flexible and reusable way</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="structural.html">Structural Patterns →</a>
+        </nav>
+
+        <div class="content">
+            <h2>Creational Patterns Overview</h2>
+            <p>Creational patterns provide various object creation mechanisms which increase flexibility and reuse of existing code.</p>
+
+            <h3>1. Singleton Pattern</h3>
+            <p>Ensures a class has only one instance and provides a global point of access to it.</p>
+
+            <div class="code-example">
+                <pre>
+class Database {
+    static #instance = null;
+    #connected = false;
+
+    constructor() {
+        if (Database.#instance) {
+            return Database.#instance;
+        }
+        Database.#instance = this;
+    }
+
+    connect() {
+        if (!this.#connected) {
+            this.#connected = true;
+            return 'Database connected';
+        }
+        return 'Already connected';
+    }
+
+    query(sql) {
+        if (!this.#connected) {
+            return 'Not connected';
+        }
+        return `Executing: ${sql}`;
+    }
+
+    static getInstance() {
+        if (!Database.#instance) {
+            Database.#instance = new Database();
+        }
+        return Database.#instance;
+    }
+}
+
+const db1 = Database.getInstance();
+const db2 = Database.getInstance();
+
+console.log(db1 === db2);  // Output: true (same instance)
+console.log(db1.connect());
+console.log(db2.query('SELECT * FROM users'));
+                </pre>
+            </div>
+
+            <h3>2. Factory Pattern</h3>
+            <p>Creates objects without specifying the exact class to create.</p>
+
+            <div class="code-example">
+                <pre>
+class User {
+    constructor(name, type) {
+        this.name = name;
+        this.type = type;
+    }
+}
+
+class Admin extends User {
+    constructor(name) {
+        super(name, 'admin');
+        this.permissions = ['read', 'write', 'delete'];
+    }
+}
+
+class Moderator extends User {
+    constructor(name) {
+        super(name, 'moderator');
+        this.permissions = ['read', 'write'];
+    }
+}
+
+class Guest extends User {
+    constructor(name) {
+        super(name, 'guest');
+        this.permissions = ['read'];
+    }
+}
+
+class UserFactory {
+    static createUser(name, role) {
+        switch(role) {
+            case 'admin':
+                return new Admin(name);
+            case 'moderator':
+                return new Moderator(name);
+            case 'guest':
+                return new Guest(name);
+            default:
+                throw new Error('Invalid role');
+        }
+    }
+}
+
+const admin = UserFactory.createUser('Alice', 'admin');
+const guest = UserFactory.createUser('Bob', 'guest');
+
+console.log(admin.permissions);  // Output: ['read', 'write', 'delete']
+console.log(guest.permissions);  // Output: ['read']
+                </pre>
+            </div>
+
+            <h3>3. Builder Pattern</h3>
+            <p>Constructs complex objects step by step.</p>
+
+            <div class="code-example">
+                <pre>
+class Pizza {
+    constructor(builder) {
+        this.size = builder.size;
+        this.cheese = builder.cheese;
+        this.pepperoni = builder.pepperoni;
+        this.mushrooms = builder.mushrooms;
+        this.olives = builder.olives;
+    }
+
+    describe() {
+        const toppings = [];
+        if (this.cheese) toppings.push('cheese');
+        if (this.pepperoni) toppings.push('pepperoni');
+        if (this.mushrooms) toppings.push('mushrooms');
+        if (this.olives) toppings.push('olives');
+        
+        return `${this.size} pizza with ${toppings.join(', ')}`;
+    }
+}
+
+class PizzaBuilder {
+    constructor(size) {
+        this.size = size;
+        this.cheese = false;
+        this.pepperoni = false;
+        this.mushrooms = false;
+        this.olives = false;
+    }
+
+    addCheese() {
+        this.cheese = true;
+        return this;
+    }
+
+    addPepperoni() {
+        this.pepperoni = true;
+        return this;
+    }
+
+    addMushrooms() {
+        this.mushrooms = true;
+        return this;
+    }
+
+    addOlives() {
+        this.olives = true;
+        return this;
+    }
+
+    build() {
+        return new Pizza(this);
+    }
+}
+
+const pizza = new PizzaBuilder('large')
+    .addCheese()
+    .addPepperoni()
+    .addMushrooms()
+    .build();
+
+console.log(pizza.describe());
+// Output: "large pizza with cheese, pepperoni, mushrooms"
+                </pre>
+            </div>
+
+            <h3>4. Prototype Pattern</h3>
+            <p>Creates new objects by copying an existing object (prototype).</p>
+
+            <div class="code-example">
+                <pre>
+class Car {
+    constructor(model, year) {
+        this.model = model;
+        this.year = year;
+    }
+
+    clone() {
+        return Object.create(
+            Object.getPrototypeOf(this),
+            Object.getOwnPropertyDescriptors(this)
+        );
+    }
+
+    display() {
+        return `${this.year} ${this.model}`;
+    }
+}
+
+const original = new Car('Tesla Model S', 2023);
+const clone1 = original.clone();
+clone1.year = 2024;
+
+console.log(original.display());  // Output: "2023 Tesla Model S"
+console.log(clone1.display());    // Output: "2024 Tesla Model S"
+console.log(original !== clone1); // Output: true
+                </pre>
+            </div>
+
+            <h3>5. Abstract Factory Pattern</h3>
+            <p>Creates families of related objects without specifying their concrete classes.</p>
+
+            <div class="code-example">
+                <pre>
+// Abstract products
+class Button {
+    click() {
+        throw new Error('Must be implemented');
+    }
+}
+
+class Checkbox {
+    check() {
+        throw new Error('Must be implemented');
+    }
+}
+
+// Concrete products - Windows
+class WindowsButton extends Button {
+    click() {
+        return 'Windows button clicked';
+    }
+}
+
+class WindowsCheckbox extends Checkbox {
+    check() {
+        return 'Windows checkbox checked';
+    }
+}
+
+// Concrete products - Mac
+class MacButton extends Button {
+    click() {
+        return 'Mac button clicked';
+    }
+}
+
+class MacCheckbox extends Checkbox {
+    check() {
+        return 'Mac checkbox checked';
+    }
+}
+
+// Abstract factory
+class UIFactory {
+    createButton() {
+        throw new Error('Must be implemented');
+    }
+
+    createCheckbox() {
+        throw new Error('Must be implemented');
+    }
+}
+
+// Concrete factories
+class WindowsFactory extends UIFactory {
+    createButton() {
+        return new WindowsButton();
+    }
+
+    createCheckbox() {
+        return new WindowsCheckbox();
+    }
+}
+
+class MacFactory extends UIFactory {
+    createButton() {
+        return new MacButton();
+    }
+
+    createCheckbox() {
+        return new MacCheckbox();
+    }
+}
+
+function createUI(factory) {
+    const button = factory.createButton();
+    const checkbox = factory.createCheckbox();
+    return {
+        button: button.click(),
+        checkbox: checkbox.check()
+    };
+}
+
+const windowsUI = createUI(new WindowsFactory());
+const macUI = createUI(new MacFactory());
+
+console.log(windowsUI);
+// Output: {button: "Windows button clicked", checkbox: "Windows checkbox checked"}
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself - Builder Pattern!</h3>
+                <p>Build your custom pizza:</p>
+                <label><input type="checkbox" id="cheese" checked> Cheese</label>
+                <label><input type="checkbox" id="pepperoni"> Pepperoni</label>
+                <label><input type="checkbox" id="mushrooms"> Mushrooms</label>
+                <label><input type="checkbox" id="olives"> Olives</label>
+                <select id="pizzaSize">
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                </select>
+                <button class="btn" onclick="buildPizza()">Build Pizza</button>
+                <div class="demo-output" id="pizzaOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Implement a Logger Singleton</h3>
+            <p>Create a Logger class using the Singleton pattern:</p>
+            <ul>
+                <li>Only one instance should exist</li>
+                <li>Methods: log(message), error(message), warn(message)</li>
+                <li>Store logs in an array</li>
+                <li>Method to retrieve all logs: getLogs()</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class Logger {
+    static #instance = null;
+    #logs = [];
+
+    constructor() {
+        if (Logger.#instance) {
+            return Logger.#instance;
+        }
+        Logger.#instance = this;
+    }
+
+    log(message) {
+        const entry = `[LOG] ${new Date().toISOString()}: ${message}`;
+        this.#logs.push(entry);
+        return entry;
+    }
+
+    error(message) {
+        const entry = `[ERROR] ${new Date().toISOString()}: ${message}`;
+        this.#logs.push(entry);
+        return entry;
+    }
+
+    warn(message) {
+        const entry = `[WARN] ${new Date().toISOString()}: ${message}`;
+        this.#logs.push(entry);
+        return entry;
+    }
+
+    getLogs() {
+        return [...this.#logs];
+    }
+
+    static getInstance() {
+        if (!Logger.#instance) {
+            Logger.#instance = new Logger();
+        }
+        return Logger.#instance;
+    }
+}
+
+const logger1 = Logger.getInstance();
+const logger2 = Logger.getInstance();
+
+console.log(logger1 === logger2);  // true
+
+logger1.log('Application started');
+logger1.error('Something went wrong');
+logger2.warn('This is a warning');
+
+console.log(logger1.getLogs());
+// All logs from both logger1 and logger2 are the same
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="structural.html">Structural Patterns →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        function buildPizza() {
+            class Pizza {
+                constructor(builder) {
+                    this.size = builder.size;
+                    this.cheese = builder.cheese;
+                    this.pepperoni = builder.pepperoni;
+                    this.mushrooms = builder.mushrooms;
+                    this.olives = builder.olives;
+                }
+
+                describe() {
+                    const toppings = [];
+                    if (this.cheese) toppings.push('cheese');
+                    if (this.pepperoni) toppings.push('pepperoni');
+                    if (this.mushrooms) toppings.push('mushrooms');
+                    if (this.olives) toppings.push('olives');
+                    
+                    return `${this.size} pizza with ${toppings.join(', ') || 'no toppings'}`;
+                }
+            }
+
+            class PizzaBuilder {
+                constructor(size) {
+                    this.size = size;
+                    this.cheese = false;
+                    this.pepperoni = false;
+                    this.mushrooms = false;
+                    this.olives = false;
+                }
+
+                addCheese() {
+                    this.cheese = true;
+                    return this;
+                }
+
+                addPepperoni() {
+                    this.pepperoni = true;
+                    return this;
+                }
+
+                addMushrooms() {
+                    this.mushrooms = true;
+                    return this;
+                }
+
+                addOlives() {
+                    this.olives = true;
+                    return this;
+                }
+
+                build() {
+                    return new Pizza(this);
+                }
+            }
+
+            const size = document.getElementById('pizzaSize').value;
+            const builder = new PizzaBuilder(size);
+
+            if (document.getElementById('cheese').checked) builder.addCheese();
+            if (document.getElementById('pepperoni').checked) builder.addPepperoni();
+            if (document.getElementById('mushrooms').checked) builder.addMushrooms();
+            if (document.getElementById('olives').checked) builder.addOlives();
+
+            const pizza = builder.build();
+            document.getElementById('pizzaOutput').innerHTML = '🍕 ' + pizza.describe();
+        }
+    </script>
+</body>
+</html>

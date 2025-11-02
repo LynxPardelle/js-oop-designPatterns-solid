@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface Segregation Principle - SOLID</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Interface Segregation Principle (ISP)</h1>
+        <p>Clients should not depend on interfaces they don't use</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="lsp.html">← LSP</a>
+            <a href="../../index.html">Home</a>
+            <a href="dip.html">DIP →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is the Interface Segregation Principle?</h2>
+            <p>The <strong>Interface Segregation Principle</strong> states that no client should be forced to depend on methods it does not use. Split large interfaces into smaller, more specific ones.</p>
+
+            <div class="example-bad">
+                <h4>❌ Violating ISP</h4>
+                <p>Fat interface that forces unnecessary implementations:</p>
+                <div class="code-example">
+                    <pre>
+class Worker {
+    work() {
+        throw new Error('Must implement');
+    }
+
+    eat() {
+        throw new Error('Must implement');
+    }
+
+    sleep() {
+        throw new Error('Must implement');
+    }
+}
+
+class Human extends Worker {
+    work() {
+        return 'Human working';
+    }
+
+    eat() {
+        return 'Human eating';
+    }
+
+    sleep() {
+        return 'Human sleeping';
+    }
+}
+
+class Robot extends Worker {
+    work() {
+        return 'Robot working';
+    }
+
+    eat() {
+        // Robots don't eat! Forced to implement unnecessary method
+        throw new Error('Robots dont eat');
+    }
+
+    sleep() {
+        // Robots don't sleep!
+        throw new Error('Robots dont sleep');
+    }
+}
+                    </pre>
+                </div>
+                <p>Problem: Robot is forced to implement eat() and sleep() which it doesn't need.</p>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Following ISP</h4>
+                <p>Segregated interfaces:</p>
+                <div class="code-example">
+                    <pre>
+class Workable {
+    work() {
+        throw new Error('Must implement');
+    }
+}
+
+class Eatable {
+    eat() {
+        throw new Error('Must implement');
+    }
+}
+
+class Sleepable {
+    sleep() {
+        throw new Error('Must implement');
+    }
+}
+
+class Human extends Workable {
+    constructor() {
+        super();
+        this.eatable = new HumanEatable();
+        this.sleepable = new HumanSleepable();
+    }
+
+    work() {
+        return 'Human working';
+    }
+
+    eat() {
+        return this.eatable.eat();
+    }
+
+    sleep() {
+        return this.sleepable.sleep();
+    }
+}
+
+class HumanEatable extends Eatable {
+    eat() {
+        return 'Human eating';
+    }
+}
+
+class HumanSleepable extends Sleepable {
+    sleep() {
+        return 'Human sleeping';
+    }
+}
+
+class Robot extends Workable {
+    work() {
+        return 'Robot working';
+    }
+
+    charge() {
+        return 'Robot charging';
+    }
+}
+
+// Each class only implements what it needs
+const human = new Human();
+const robot = new Robot();
+
+console.log(human.work());   // "Human working"
+console.log(human.eat());    // "Human eating"
+console.log(robot.work());   // "Robot working"
+console.log(robot.charge()); // "Robot charging"
+// Robot doesn't need eat() or sleep()
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Printer Example</h3>
+            <div class="example-bad">
+                <h4>❌ Fat Interface</h4>
+                <div class="code-example">
+                    <pre>
+class AllInOnePrinter {
+    print(doc) {}
+    scan(doc) {}
+    fax(doc) {}
+    staple(doc) {}
+}
+
+class SimplePrinter extends AllInOnePrinter {
+    print(doc) {
+        return `Printing: ${doc}`;
+    }
+
+    scan(doc) {
+        throw new Error('Cannot scan');  // Forced to implement
+    }
+
+    fax(doc) {
+        throw new Error('Cannot fax');
+    }
+
+    staple(doc) {
+        throw new Error('Cannot staple');
+    }
+}
+                    </pre>
+                </div>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Segregated Interfaces</h4>
+                <div class="code-example">
+                    <pre>
+class Printer {
+    print(doc) {
+        throw new Error('Must implement');
+    }
+}
+
+class Scanner {
+    scan(doc) {
+        throw new Error('Must implement');
+    }
+}
+
+class Fax {
+    fax(doc) {
+        throw new Error('Must implement');
+    }
+}
+
+class SimplePrinter extends Printer {
+    print(doc) {
+        return `Printing: ${doc}`;
+    }
+}
+
+class MultiFunctionPrinter extends Printer {
+    constructor() {
+        super();
+        this.scanner = new ScannerImpl();
+        this.faxMachine = new FaxImpl();
+    }
+
+    print(doc) {
+        return `Printing: ${doc}`;
+    }
+
+    scan(doc) {
+        return this.scanner.scan(doc);
+    }
+
+    fax(doc) {
+        return this.faxMachine.fax(doc);
+    }
+}
+
+class ScannerImpl extends Scanner {
+    scan(doc) {
+        return `Scanning: ${doc}`;
+    }
+}
+
+class FaxImpl extends Fax {
+    fax(doc) {
+        return `Faxing: ${doc}`;
+    }
+}
+
+const simple = new SimplePrinter();
+console.log(simple.print('Document.pdf'));
+
+const multiFunction = new MultiFunctionPrinter();
+console.log(multiFunction.print('Doc.pdf'));
+console.log(multiFunction.scan('Doc.pdf'));
+console.log(multiFunction.fax('Doc.pdf'));
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Benefits of ISP</h3>
+            <ul>
+                <li><strong>Flexibility:</strong> Classes implement only what they need</li>
+                <li><strong>Maintainability:</strong> Changes to one interface don't affect unrelated classes</li>
+                <li><strong>Readability:</strong> Clear what each class can do</li>
+                <li><strong>Testing:</strong> Easier to mock and test specific behaviors</li>
+            </ul>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Compare fat interface vs segregated interfaces:</p>
+                <select id="workerType">
+                    <option value="human">Human Worker</option>
+                    <option value="robot">Robot Worker</option>
+                </select>
+                <button class="btn" onclick="demonstrateISP()">Demonstrate</button>
+                <div class="demo-output" id="ispOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Media Player</h3>
+            <p>Refactor this fat interface:</p>
+            <div class="code-example">
+                <pre>
+class MediaPlayer {
+    playAudio() {}
+    playVideo() {}
+    displaySubtitles() {}
+    adjustVolume() {}
+}
+
+class AudioPlayer extends MediaPlayer {
+    playAudio() { return 'Playing audio'; }
+    playVideo() { throw new Error('Cannot play video'); }
+    displaySubtitles() { throw new Error('No subtitles'); }
+    adjustVolume() { return 'Adjusting volume'; }
+}
+                </pre>
+            </div>
+            <p>Create segregated interfaces following ISP.</p>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class AudioPlayable {
+    playAudio() {
+        throw new Error('Must implement');
+    }
+}
+
+class VideoPlayable {
+    playVideo() {
+        throw new Error('Must implement');
+    }
+}
+
+class Subtitles {
+    displaySubtitles() {
+        throw new Error('Must implement');
+    }
+}
+
+class VolumeControl {
+    adjustVolume() {
+        throw new Error('Must implement');
+    }
+}
+
+class AudioPlayer extends AudioPlayable {
+    constructor() {
+        super();
+        this.volumeControl = new VolumeControlImpl();
+    }
+
+    playAudio() {
+        return 'Playing audio';
+    }
+
+    adjustVolume(level) {
+        return this.volumeControl.adjustVolume(level);
+    }
+}
+
+class VideoPlayer extends VideoPlayable {
+    constructor() {
+        super();
+        this.audioPlayable = new AudioPlayableImpl();
+        this.subtitles = new SubtitlesImpl();
+        this.volumeControl = new VolumeControlImpl();
+    }
+
+    playVideo() {
+        return 'Playing video';
+    }
+
+    playAudio() {
+        return this.audioPlayable.playAudio();
+    }
+
+    displaySubtitles() {
+        return this.subtitles.displaySubtitles();
+    }
+
+    adjustVolume(level) {
+        return this.volumeControl.adjustVolume(level);
+    }
+}
+
+class AudioPlayableImpl extends AudioPlayable {
+    playAudio() {
+        return 'Playing audio track';
+    }
+}
+
+class SubtitlesImpl extends Subtitles {
+    displaySubtitles() {
+        return 'Displaying subtitles';
+    }
+}
+
+class VolumeControlImpl extends VolumeControl {
+    adjustVolume(level) {
+        return `Volume set to ${level}`;
+    }
+}
+
+const audio = new AudioPlayer();
+console.log(audio.playAudio());
+console.log(audio.adjustVolume(50));
+
+const video = new VideoPlayer();
+console.log(video.playVideo());
+console.log(video.displaySubtitles());
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="lsp.html">← LSP</a>
+            <a href="../../index.html">Home</a>
+            <a href="dip.html">DIP →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        function demonstrateISP() {
+            const type = document.getElementById('workerType').value;
+            
+            class Workable {
+                work() {
+                    return 'Working...';
+                }
+            }
+
+            class Human extends Workable {
+                work() {
+                    return '👷 Human is working';
+                }
+                eat() {
+                    return '🍽️ Human is eating';
+                }
+                sleep() {
+                    return '😴 Human is sleeping';
+                }
+            }
+
+            class Robot extends Workable {
+                work() {
+                    return '🤖 Robot is working';
+                }
+                charge() {
+                    return '🔋 Robot is charging';
+                }
+            }
+
+            let output = '';
+            if (type === 'human') {
+                const human = new Human();
+                output = `${human.work()}<br>`;
+                output += `${human.eat()}<br>`;
+                output += `${human.sleep()}<br>`;
+                output += '<br><em>Human implements all three methods it needs</em>';
+            } else {
+                const robot = new Robot();
+                output = `${robot.work()}<br>`;
+                output += `${robot.charge()}<br>`;
+                output += '<br><em>Robot only implements work() and charge().<br>';
+                output += 'It is NOT forced to implement eat() or sleep()!<br>';
+                output += 'This follows ISP!</em>';
+            }
+
+            document.getElementById('ispOutput').innerHTML = output;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymorphism - OOP</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Polymorphism</h1>
+        <p>Many forms of the same interface</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="inheritance.html">← Inheritance</a>
+            <a href="../../index.html">Home</a>
+            <a href="abstraction.html">Abstraction →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is Polymorphism?</h2>
+            <p><strong>Polymorphism</strong> means "many forms". It allows objects of different classes to be treated as objects of a common parent class, and lets methods behave differently based on the object that calls them.</p>
+
+            <h3>Method Overriding (Runtime Polymorphism)</h3>
+            <div class="code-example">
+                <pre>
+class Shape {
+    area() {
+        return 0;
+    }
+    
+    describe() {
+        return `Area: ${this.area()}`;
+    }
+}
+
+class Circle extends Shape {
+    constructor(radius) {
+        super();
+        this.radius = radius;
+    }
+    
+    area() {
+        return Math.PI * this.radius ** 2;
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(width, height) {
+        super();
+        this.width = width;
+        this.height = height;
+    }
+    
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class Triangle extends Shape {
+    constructor(base, height) {
+        super();
+        this.base = base;
+        this.height = height;
+    }
+    
+    area() {
+        return (this.base * this.height) / 2;
+    }
+}
+
+// Polymorphism in action - same method, different behavior
+const shapes = [
+    new Circle(5),
+    new Rectangle(4, 6),
+    new Triangle(3, 8)
+];
+
+shapes.forEach(shape => {
+    console.log(shape.describe());
+});
+// Output:
+// "Area: 78.53981633974483"
+// "Area: 24"
+// "Area: 12"
+                </pre>
+            </div>
+
+            <h3>Duck Typing</h3>
+            <p>JavaScript uses duck typing: "If it walks like a duck and quacks like a duck, it must be a duck." Objects are treated based on what they can do, not what they are.</p>
+
+            <div class="code-example">
+                <pre>
+class Bird {
+    fly() {
+        return 'Bird is flying';
+    }
+}
+
+class Airplane {
+    fly() {
+        return 'Airplane is flying';
+    }
+}
+
+class Superman {
+    fly() {
+        return 'Superman is flying';
+    }
+}
+
+// Function accepts anything that can fly
+function makeFly(flyingThing) {
+    return flyingThing.fly();
+}
+
+console.log(makeFly(new Bird()));      // Output: "Bird is flying"
+console.log(makeFly(new Airplane()));  // Output: "Airplane is flying"
+console.log(makeFly(new Superman()));  // Output: "Superman is flying"
+                </pre>
+            </div>
+
+            <h3>Method Overloading (Simulated)</h3>
+            <p>JavaScript doesn't support traditional method overloading, but we can simulate it using default parameters or rest parameters.</p>
+
+            <div class="code-example">
+                <pre>
+class Calculator {
+    // Simulating method overloading with default parameters
+    add(a, b = 0, c = 0) {
+        return a + b + c;
+    }
+    
+    // Using rest parameters for variable arguments
+    multiply(...numbers) {
+        return numbers.reduce((acc, num) => acc * num, 1);
+    }
+    
+    // Type checking for different behaviors
+    process(value) {
+        if (typeof value === 'number') {
+            return value * 2;
+        } else if (typeof value === 'string') {
+            return value.toUpperCase();
+        } else if (Array.isArray(value)) {
+            return value.length;
+        }
+        return 'Unknown type';
+    }
+}
+
+const calc = new Calculator();
+console.log(calc.add(5));           // Output: 5
+console.log(calc.add(5, 10));       // Output: 15
+console.log(calc.add(5, 10, 15));   // Output: 30
+
+console.log(calc.multiply(2, 3, 4));  // Output: 24
+
+console.log(calc.process(10));        // Output: 20
+console.log(calc.process('hello'));   // Output: "HELLO"
+console.log(calc.process([1, 2, 3])); // Output: 3
+                </pre>
+            </div>
+
+            <h3>Polymorphic Collections</h3>
+            <div class="code-example">
+                <pre>
+class Payment {
+    process(amount) {
+        return `Processing payment of $${amount}`;
+    }
+}
+
+class CreditCard extends Payment {
+    constructor(cardNumber) {
+        super();
+        this.cardNumber = cardNumber;
+    }
+    
+    process(amount) {
+        return `Charging $${amount} to credit card ending in ${this.cardNumber.slice(-4)}`;
+    }
+}
+
+class PayPal extends Payment {
+    constructor(email) {
+        super();
+        this.email = email;
+    }
+    
+    process(amount) {
+        return `Processing $${amount} via PayPal account ${this.email}`;
+    }
+}
+
+class Cryptocurrency extends Payment {
+    constructor(walletAddress) {
+        super();
+        this.walletAddress = walletAddress;
+    }
+    
+    process(amount) {
+        return `Transferring $${amount} to crypto wallet ${this.walletAddress.slice(0, 8)}...`;
+    }
+}
+
+// Polymorphic array - different types, same interface
+const paymentMethods = [
+    new CreditCard('1234567890123456'),
+    new PayPal('user@example.com'),
+    new Cryptocurrency('0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb')
+];
+
+// Process all payments polymorphically
+paymentMethods.forEach(payment => {
+    console.log(payment.process(100));
+});
+                </pre>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Benefits of Polymorphism</h4>
+                <ul>
+                    <li>Write more flexible and reusable code</li>
+                    <li>Easier to extend and maintain</li>
+                    <li>Reduces code duplication</li>
+                    <li>Enables generic programming</li>
+                </ul>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Calculate areas of different shapes:</p>
+                <select id="shapeType">
+                    <option value="circle">Circle</option>
+                    <option value="rectangle">Rectangle</option>
+                    <option value="triangle">Triangle</option>
+                </select>
+                <input type="number" id="param1" placeholder="Parameter 1" />
+                <input type="number" id="param2" placeholder="Parameter 2" style="display:none;" />
+                <button class="btn" onclick="calculateArea()">Calculate Area</button>
+                <div class="demo-output" id="shapeOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create a Notification System</h3>
+            <p>Create a polymorphic notification system:</p>
+            <ul>
+                <li>Base class <code>Notification</code> with send(message) method</li>
+                <li><code>EmailNotification</code>, <code>SMSNotification</code>, <code>PushNotification</code> subclasses</li>
+                <li>Each implements send() differently</li>
+                <li>Create a function that sends the same message via all notification types</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class Notification {
+    send(message) {
+        return `Sending: ${message}`;
+    }
+}
+
+class EmailNotification extends Notification {
+    constructor(email) {
+        super();
+        this.email = email;
+    }
+    
+    send(message) {
+        return `📧 Email to ${this.email}: ${message}`;
+    }
+}
+
+class SMSNotification extends Notification {
+    constructor(phoneNumber) {
+        super();
+        this.phoneNumber = phoneNumber;
+    }
+    
+    send(message) {
+        return `📱 SMS to ${this.phoneNumber}: ${message}`;
+    }
+}
+
+class PushNotification extends Notification {
+    constructor(deviceId) {
+        super();
+        this.deviceId = deviceId;
+    }
+    
+    send(message) {
+        return `🔔 Push to device ${this.deviceId}: ${message}`;
+    }
+}
+
+function notifyAll(notifications, message) {
+    return notifications.map(n => n.send(message));
+}
+
+const notifications = [
+    new EmailNotification('user@example.com'),
+    new SMSNotification('+1234567890'),
+    new PushNotification('device-123')
+];
+
+const results = notifyAll(notifications, 'Hello World!');
+results.forEach(r => console.log(r));
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="inheritance.html">← Inheritance</a>
+            <a href="../../index.html">Home</a>
+            <a href="abstraction.html">Abstraction →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class Shape {
+            area() { return 0; }
+        }
+
+        class Circle extends Shape {
+            constructor(radius) {
+                super();
+                this.radius = radius;
+            }
+            area() {
+                return Math.PI * this.radius ** 2;
+            }
+        }
+
+        class Rectangle extends Shape {
+            constructor(width, height) {
+                super();
+                this.width = width;
+                this.height = height;
+            }
+            area() {
+                return this.width * this.height;
+            }
+        }
+
+        class Triangle extends Shape {
+            constructor(base, height) {
+                super();
+                this.base = base;
+                this.height = height;
+            }
+            area() {
+                return (this.base * this.height) / 2;
+            }
+        }
+
+        document.getElementById('shapeType').addEventListener('change', function() {
+            const param2 = document.getElementById('param2');
+            if (this.value === 'circle') {
+                document.getElementById('param1').placeholder = 'Radius';
+                param2.style.display = 'none';
+            } else if (this.value === 'rectangle') {
+                document.getElementById('param1').placeholder = 'Width';
+                param2.style.display = 'inline-block';
+                param2.placeholder = 'Height';
+            } else {
+                document.getElementById('param1').placeholder = 'Base';
+                param2.style.display = 'inline-block';
+                param2.placeholder = 'Height';
+            }
+        });
+
+        function calculateArea() {
+            const type = document.getElementById('shapeType').value;
+            const param1 = parseFloat(document.getElementById('param1').value);
+            const param2 = parseFloat(document.getElementById('param2').value);
+            
+            let shape;
+            if (type === 'circle') {
+                if (!param1) {
+                    document.getElementById('shapeOutput').innerHTML = 'Please enter radius!';
+                    return;
+                }
+                shape = new Circle(param1);
+            } else if (type === 'rectangle') {
+                if (!param1 || !param2) {
+                    document.getElementById('shapeOutput').innerHTML = 'Please enter width and height!';
+                    return;
+                }
+                shape = new Rectangle(param1, param2);
+            } else {
+                if (!param1 || !param2) {
+                    document.getElementById('shapeOutput').innerHTML = 'Please enter base and height!';
+                    return;
+                }
+                shape = new Triangle(param1, param2);
+            }
+            
+            document.getElementById('shapeOutput').innerHTML = 
+                `Area of ${type}: ${shape.area().toFixed(2)} square units`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behavioral Patterns - Design Patterns</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Behavioral Design Patterns</h1>
+        <p>Patterns for effective communication and responsibility assignment between objects</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="structural.html">← Structural</a>
+            <a href="../../index.html">Home</a>
+            <a href="../solid/srp.html">SOLID Principles →</a>
+        </nav>
+
+        <div class="content">
+            <h2>Behavioral Patterns Overview</h2>
+            <p>Behavioral patterns are concerned with algorithms and the assignment of responsibilities between objects.</p>
+
+            <h3>1. Observer Pattern</h3>
+            <p>Defines a subscription mechanism to notify multiple objects about events.</p>
+
+            <div class="code-example">
+                <pre>
+class Subject {
+    constructor() {
+        this.observers = [];
+    }
+
+    subscribe(observer) {
+        this.observers.push(observer);
+    }
+
+    unsubscribe(observer) {
+        this.observers = this.observers.filter(obs => obs !== observer);
+    }
+
+    notify(data) {
+        this.observers.forEach(observer => observer.update(data));
+    }
+}
+
+class Observer {
+    constructor(name) {
+        this.name = name;
+    }
+
+    update(data) {
+        console.log(`${this.name} received: ${data}`);
+    }
+}
+
+const subject = new Subject();
+const observer1 = new Observer('Observer 1');
+const observer2 = new Observer('Observer 2');
+
+subject.subscribe(observer1);
+subject.subscribe(observer2);
+
+subject.notify('Hello Observers!');
+// Output:
+// "Observer 1 received: Hello Observers!"
+// "Observer 2 received: Hello Observers!"
+                </pre>
+            </div>
+
+            <h3>2. Strategy Pattern</h3>
+            <p>Defines a family of algorithms, encapsulates each one, and makes them interchangeable.</p>
+
+            <div class="code-example">
+                <pre>
+class PaymentStrategy {
+    pay(amount) {
+        throw new Error('pay() must be implemented');
+    }
+}
+
+class CreditCardStrategy extends PaymentStrategy {
+    constructor(cardNumber) {
+        super();
+        this.cardNumber = cardNumber;
+    }
+
+    pay(amount) {
+        return `Paid $${amount} with credit card ${this.cardNumber}`;
+    }
+}
+
+class PayPalStrategy extends PaymentStrategy {
+    constructor(email) {
+        super();
+        this.email = email;
+    }
+
+    pay(amount) {
+        return `Paid $${amount} via PayPal (${this.email})`;
+    }
+}
+
+class CryptoStrategy extends PaymentStrategy {
+    constructor(wallet) {
+        super();
+        this.wallet = wallet;
+    }
+
+    pay(amount) {
+        return `Paid $${amount} with crypto wallet ${this.wallet}`;
+    }
+}
+
+class ShoppingCart {
+    constructor(paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+        this.amount = 0;
+    }
+
+    setPaymentStrategy(strategy) {
+        this.paymentStrategy = strategy;
+    }
+
+    checkout(amount) {
+        this.amount = amount;
+        return this.paymentStrategy.pay(amount);
+    }
+}
+
+const cart = new ShoppingCart(new CreditCardStrategy('1234-5678'));
+console.log(cart.checkout(100));
+
+cart.setPaymentStrategy(new PayPalStrategy('user@example.com'));
+console.log(cart.checkout(50));
+                </pre>
+            </div>
+
+            <h3>3. Command Pattern</h3>
+            <p>Encapsulates a request as an object, allowing parameterization and queuing of requests.</p>
+
+            <div class="code-example">
+                <pre>
+class Light {
+    turnOn() {
+        return 'Light is ON';
+    }
+
+    turnOff() {
+        return 'Light is OFF';
+    }
+}
+
+class Command {
+    execute() {
+        throw new Error('execute() must be implemented');
+    }
+
+    undo() {
+        throw new Error('undo() must be implemented');
+    }
+}
+
+class TurnOnCommand extends Command {
+    constructor(light) {
+        super();
+        this.light = light;
+    }
+
+    execute() {
+        return this.light.turnOn();
+    }
+
+    undo() {
+        return this.light.turnOff();
+    }
+}
+
+class TurnOffCommand extends Command {
+    constructor(light) {
+        super();
+        this.light = light;
+    }
+
+    execute() {
+        return this.light.turnOff();
+    }
+
+    undo() {
+        return this.light.turnOn();
+    }
+}
+
+class RemoteControl {
+    constructor() {
+        this.history = [];
+    }
+
+    execute(command) {
+        const result = command.execute();
+        this.history.push(command);
+        return result;
+    }
+
+    undo() {
+        const command = this.history.pop();
+        if (command) {
+            return command.undo();
+        }
+        return 'Nothing to undo';
+    }
+}
+
+const light = new Light();
+const remote = new RemoteControl();
+
+console.log(remote.execute(new TurnOnCommand(light)));
+console.log(remote.execute(new TurnOffCommand(light)));
+console.log(remote.undo());  // Undoes last command
+                </pre>
+            </div>
+
+            <h3>4. Iterator Pattern</h3>
+            <p>Provides a way to access elements sequentially without exposing underlying representation.</p>
+
+            <div class="code-example">
+                <pre>
+class BookCollection {
+    constructor() {
+        this.books = [];
+    }
+
+    addBook(book) {
+        this.books.push(book);
+    }
+
+    [Symbol.iterator]() {
+        let index = 0;
+        const books = this.books;
+
+        return {
+            next() {
+                if (index < books.length) {
+                    return { value: books[index++], done: false };
+                }
+                return { done: true };
+            }
+        };
+    }
+}
+
+const collection = new BookCollection();
+collection.addBook({ title: '1984', author: 'George Orwell' });
+collection.addBook({ title: 'Brave New World', author: 'Aldous Huxley' });
+collection.addBook({ title: 'Fahrenheit 451', author: 'Ray Bradbury' });
+
+for (const book of collection) {
+    console.log(`${book.title} by ${book.author}`);
+}
+                </pre>
+            </div>
+
+            <h3>5. Chain of Responsibility Pattern</h3>
+            <p>Passes requests along a chain of handlers.</p>
+
+            <div class="code-example">
+                <pre>
+class Handler {
+    setNext(handler) {
+        this.nextHandler = handler;
+        return handler;
+    }
+
+    handle(request) {
+        if (this.nextHandler) {
+            return this.nextHandler.handle(request);
+        }
+        return null;
+    }
+}
+
+class AuthHandler extends Handler {
+    handle(request) {
+        if (!request.authenticated) {
+            return 'Authentication failed';
+        }
+        console.log('Authentication passed');
+        return super.handle(request);
+    }
+}
+
+class ValidationHandler extends Handler {
+    handle(request) {
+        if (!request.valid) {
+            return 'Validation failed';
+        }
+        console.log('Validation passed');
+        return super.handle(request);
+    }
+}
+
+class ProcessHandler extends Handler {
+    handle(request) {
+        console.log('Processing request');
+        return 'Request processed successfully';
+    }
+}
+
+const auth = new AuthHandler();
+const validation = new ValidationHandler();
+const process = new ProcessHandler();
+
+auth.setNext(validation).setNext(process);
+
+console.log(auth.handle({ authenticated: true, valid: true }));
+// Output:
+// "Authentication passed"
+// "Validation passed"
+// "Processing request"
+// "Request processed successfully"
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself - Strategy Pattern!</h3>
+                <p>Choose payment method and checkout:</p>
+                <select id="paymentMethod">
+                    <option value="credit">Credit Card</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="crypto">Cryptocurrency</option>
+                </select>
+                <input type="number" id="amount" placeholder="Amount" value="100" />
+                <button class="btn" onclick="processPayment()">Process Payment</button>
+                <div class="demo-output" id="paymentOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Implement a State Pattern</h3>
+            <p>Create a traffic light system using the State pattern:</p>
+            <ul>
+                <li>States: Red, Yellow, Green</li>
+                <li>Each state handles what happens when light changes</li>
+                <li>Red → Green → Yellow → Red</li>
+                <li>Create <code>TrafficLight</code> class with <code>change()</code> method</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class State {
+    handle(context) {
+        throw new Error('handle() must be implemented');
+    }
+}
+
+class RedState extends State {
+    handle(context) {
+        console.log('Red light - STOP');
+        context.setState(new GreenState());
+        return 'Changed to Green';
+    }
+}
+
+class GreenState extends State {
+    handle(context) {
+        console.log('Green light - GO');
+        context.setState(new YellowState());
+        return 'Changed to Yellow';
+    }
+}
+
+class YellowState extends State {
+    handle(context) {
+        console.log('Yellow light - CAUTION');
+        context.setState(new RedState());
+        return 'Changed to Red';
+    }
+}
+
+class TrafficLight {
+    constructor() {
+        this.state = new RedState();
+    }
+
+    setState(state) {
+        this.state = state;
+    }
+
+    change() {
+        return this.state.handle(this);
+    }
+}
+
+const light = new TrafficLight();
+console.log(light.change());  // Red → Green
+console.log(light.change());  // Green → Yellow
+console.log(light.change());  // Yellow → Red
+console.log(light.change());  // Red → Green
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="structural.html">← Structural</a>
+            <a href="../../index.html">Home</a>
+            <a href="../solid/srp.html">SOLID Principles →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        function processPayment() {
+            class PaymentStrategy {
+                pay(amount) {
+                    throw new Error('pay() must be implemented');
+                }
+            }
+
+            class CreditCardStrategy extends PaymentStrategy {
+                pay(amount) {
+                    return `💳 Paid $${amount} with Credit Card`;
+                }
+            }
+
+            class PayPalStrategy extends PaymentStrategy {
+                pay(amount) {
+                    return `💰 Paid $${amount} via PayPal`;
+                }
+            }
+
+            class CryptoStrategy extends PaymentStrategy {
+                pay(amount) {
+                    return `₿ Paid $${amount} with Cryptocurrency`;
+                }
+            }
+
+            const method = document.getElementById('paymentMethod').value;
+            const amount = document.getElementById('amount').value;
+
+            if (!amount || amount <= 0) {
+                document.getElementById('paymentOutput').innerHTML = 'Please enter a valid amount!';
+                return;
+            }
+
+            let strategy;
+            switch(method) {
+                case 'credit':
+                    strategy = new CreditCardStrategy();
+                    break;
+                case 'paypal':
+                    strategy = new PayPalStrategy();
+                    break;
+                case 'crypto':
+                    strategy = new CryptoStrategy();
+                    break;
+            }
+
+            document.getElementById('paymentOutput').innerHTML = strategy.pay(amount);
+        }
+    </script>
+</body>
+</html>

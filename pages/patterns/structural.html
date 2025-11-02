@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Patterns - Design Patterns</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Structural Design Patterns</h1>
+        <p>Patterns for composing objects and classes into larger structures</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="creational.html">← Creational</a>
+            <a href="../../index.html">Home</a>
+            <a href="behavioral.html">Behavioral →</a>
+        </nav>
+
+        <div class="content">
+            <h2>Structural Patterns Overview</h2>
+            <p>Structural patterns explain how to assemble objects and classes into larger structures while keeping these structures flexible and efficient.</p>
+
+            <h3>1. Adapter Pattern</h3>
+            <p>Allows objects with incompatible interfaces to collaborate.</p>
+
+            <div class="code-example">
+                <pre>
+// Old interface
+class OldPrinter {
+    printOldFormat(text) {
+        return `OLD FORMAT: ${text}`;
+    }
+}
+
+// New interface expected by client
+class ModernPrinter {
+    print(text) {
+        return `Modern: ${text}`;
+    }
+}
+
+// Adapter makes OldPrinter compatible with new interface
+class PrinterAdapter {
+    constructor(oldPrinter) {
+        this.oldPrinter = oldPrinter;
+    }
+
+    print(text) {
+        return this.oldPrinter.printOldFormat(text);
+    }
+}
+
+const oldPrinter = new OldPrinter();
+const adapter = new PrinterAdapter(oldPrinter);
+
+console.log(adapter.print('Hello'));
+// Output: "OLD FORMAT: Hello"
+                </pre>
+            </div>
+
+            <h3>2. Decorator Pattern</h3>
+            <p>Adds new functionality to objects dynamically without altering their structure.</p>
+
+            <div class="code-example">
+                <pre>
+class Coffee {
+    cost() {
+        return 5;
+    }
+
+    description() {
+        return 'Simple coffee';
+    }
+}
+
+class MilkDecorator {
+    constructor(coffee) {
+        this.coffee = coffee;
+    }
+
+    cost() {
+        return this.coffee.cost() + 2;
+    }
+
+    description() {
+        return this.coffee.description() + ', milk';
+    }
+}
+
+class SugarDecorator {
+    constructor(coffee) {
+        this.coffee = coffee;
+    }
+
+    cost() {
+        return this.coffee.cost() + 1;
+    }
+
+    description() {
+        return this.coffee.description() + ', sugar';
+    }
+}
+
+class WhippedCreamDecorator {
+    constructor(coffee) {
+        this.coffee = coffee;
+    }
+
+    cost() {
+        return this.coffee.cost() + 3;
+    }
+
+    description() {
+        return this.coffee.description() + ', whipped cream';
+    }
+}
+
+let myCoffee = new Coffee();
+myCoffee = new MilkDecorator(myCoffee);
+myCoffee = new SugarDecorator(myCoffee);
+myCoffee = new WhippedCreamDecorator(myCoffee);
+
+console.log(myCoffee.description());  // Output: "Simple coffee, milk, sugar, whipped cream"
+console.log(myCoffee.cost());         // Output: 11
+                </pre>
+            </div>
+
+            <h3>3. Facade Pattern</h3>
+            <p>Provides a simplified interface to a complex subsystem.</p>
+
+            <div class="code-example">
+                <pre>
+// Complex subsystems
+class CPU {
+    freeze() { return 'CPU frozen'; }
+    jump(position) { return `CPU jumped to ${position}`; }
+    execute() { return 'CPU executing'; }
+}
+
+class Memory {
+    load(position, data) { 
+        return `Memory loaded ${data} at ${position}`; 
+    }
+}
+
+class HardDrive {
+    read(sector, size) { 
+        return `Read ${size} bytes from sector ${sector}`; 
+    }
+}
+
+// Facade
+class ComputerFacade {
+    constructor() {
+        this.cpu = new CPU();
+        this.memory = new Memory();
+        this.hardDrive = new HardDrive();
+    }
+
+    start() {
+        const steps = [];
+        steps.push(this.cpu.freeze());
+        steps.push(this.memory.load(0, this.hardDrive.read(0, 1024)));
+        steps.push(this.cpu.jump(0));
+        steps.push(this.cpu.execute());
+        return 'Computer started!\n' + steps.join('\n');
+    }
+}
+
+const computer = new ComputerFacade();
+console.log(computer.start());
+// Simple interface hides complex startup process
+                </pre>
+            </div>
+
+            <h3>4. Proxy Pattern</h3>
+            <p>Provides a substitute or placeholder for another object to control access to it.</p>
+
+            <div class="code-example">
+                <pre>
+class RealImage {
+    constructor(filename) {
+        this.filename = filename;
+        this.loadFromDisk();
+    }
+
+    loadFromDisk() {
+        console.log(`Loading ${this.filename}`);
+    }
+
+    display() {
+        return `Displaying ${this.filename}`;
+    }
+}
+
+class ProxyImage {
+    constructor(filename) {
+        this.filename = filename;
+        this.realImage = null;
+    }
+
+    display() {
+        if (this.realImage === null) {
+            this.realImage = new RealImage(this.filename);
+        }
+        return this.realImage.display();
+    }
+}
+
+// Image is loaded only when needed
+const image1 = new ProxyImage('photo1.jpg');
+const image2 = new ProxyImage('photo2.jpg');
+
+console.log(image1.display());  // Loads and displays
+console.log(image1.display());  // Just displays (already loaded)
+                </pre>
+            </div>
+
+            <h3>5. Composite Pattern</h3>
+            <p>Composes objects into tree structures to represent hierarchies.</p>
+
+            <div class="code-example">
+                <pre>
+class File {
+    constructor(name, size) {
+        this.name = name;
+        this.size = size;
+    }
+
+    getSize() {
+        return this.size;
+    }
+
+    display(indent = '') {
+        return `${indent}📄 ${this.name} (${this.size}KB)`;
+    }
+}
+
+class Folder {
+    constructor(name) {
+        this.name = name;
+        this.children = [];
+    }
+
+    add(item) {
+        this.children.push(item);
+    }
+
+    remove(item) {
+        const index = this.children.indexOf(item);
+        if (index !== -1) {
+            this.children.splice(index, 1);
+        }
+    }
+
+    getSize() {
+        return this.children.reduce((total, child) => {
+            return total + child.getSize();
+        }, 0);
+    }
+
+    display(indent = '') {
+        let result = `${indent}📁 ${this.name}\n`;
+        this.children.forEach(child => {
+            result += child.display(indent + '  ') + '\n';
+        });
+        return result;
+    }
+}
+
+const root = new Folder('root');
+const documents = new Folder('documents');
+const photos = new Folder('photos');
+
+documents.add(new File('resume.pdf', 150));
+documents.add(new File('letter.doc', 50));
+photos.add(new File('vacation.jpg', 2000));
+photos.add(new File('family.png', 1500));
+
+root.add(documents);
+root.add(photos);
+root.add(new File('readme.txt', 10));
+
+console.log(root.display());
+console.log(`Total size: ${root.getSize()}KB`);
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself - Decorator Pattern!</h3>
+                <p>Customize your coffee:</p>
+                <label><input type="checkbox" id="milk"> Add Milk (+$2)</label>
+                <label><input type="checkbox" id="sugar"> Add Sugar (+$1)</label>
+                <label><input type="checkbox" id="cream"> Add Whipped Cream (+$3)</label>
+                <button class="btn" onclick="orderCoffee()">Order Coffee</button>
+                <div class="demo-output" id="coffeeOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create a Logging Proxy</h3>
+            <p>Create a proxy that logs all method calls:</p>
+            <ul>
+                <li>Create a <code>BankAccount</code> class with deposit/withdraw methods</li>
+                <li>Create a <code>LoggingProxy</code> that logs all operations</li>
+                <li>Proxy should track: method name, parameters, timestamp</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class BankAccount {
+    constructor(balance = 0) {
+        this.balance = balance;
+    }
+
+    deposit(amount) {
+        this.balance += amount;
+        return `Deposited $${amount}. Balance: $${this.balance}`;
+    }
+
+    withdraw(amount) {
+        if (amount <= this.balance) {
+            this.balance -= amount;
+            return `Withdrew $${amount}. Balance: $${this.balance}`;
+        }
+        return 'Insufficient funds';
+    }
+
+    getBalance() {
+        return this.balance;
+    }
+}
+
+class LoggingProxy {
+    constructor(account) {
+        this.account = account;
+        this.logs = [];
+    }
+
+    #log(method, args, result) {
+        const entry = {
+            timestamp: new Date().toISOString(),
+            method: method,
+            args: args,
+            result: result
+        };
+        this.logs.push(entry);
+        console.log(`[${entry.timestamp}] ${method}(${args}) => ${result}`);
+    }
+
+    deposit(amount) {
+        const result = this.account.deposit(amount);
+        this.#log('deposit', amount, result);
+        return result;
+    }
+
+    withdraw(amount) {
+        const result = this.account.withdraw(amount);
+        this.#log('withdraw', amount, result);
+        return result;
+    }
+
+    getBalance() {
+        const result = this.account.getBalance();
+        this.#log('getBalance', '', result);
+        return result;
+    }
+
+    getLogs() {
+        return this.logs;
+    }
+}
+
+const account = new BankAccount(1000);
+const proxy = new LoggingProxy(account);
+
+proxy.deposit(500);
+proxy.withdraw(200);
+proxy.getBalance();
+
+console.log(proxy.getLogs());
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="creational.html">← Creational</a>
+            <a href="../../index.html">Home</a>
+            <a href="behavioral.html">Behavioral →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        function orderCoffee() {
+            class Coffee {
+                cost() { return 5; }
+                description() { return 'Simple coffee'; }
+            }
+
+            class MilkDecorator {
+                constructor(coffee) { this.coffee = coffee; }
+                cost() { return this.coffee.cost() + 2; }
+                description() { return this.coffee.description() + ', milk'; }
+            }
+
+            class SugarDecorator {
+                constructor(coffee) { this.coffee = coffee; }
+                cost() { return this.coffee.cost() + 1; }
+                description() { return this.coffee.description() + ', sugar'; }
+            }
+
+            class WhippedCreamDecorator {
+                constructor(coffee) { this.coffee = coffee; }
+                cost() { return this.coffee.cost() + 3; }
+                description() { return this.coffee.description() + ', whipped cream'; }
+            }
+
+            let coffee = new Coffee();
+
+            if (document.getElementById('milk').checked) {
+                coffee = new MilkDecorator(coffee);
+            }
+            if (document.getElementById('sugar').checked) {
+                coffee = new SugarDecorator(coffee);
+            }
+            if (document.getElementById('cream').checked) {
+                coffee = new WhippedCreamDecorator(coffee);
+            }
+
+            document.getElementById('coffeeOutput').innerHTML = 
+                `☕ ${coffee.description()}<br>Total cost: $${coffee.cost()}`;
+        }
+    </script>
+</body>
+</html>

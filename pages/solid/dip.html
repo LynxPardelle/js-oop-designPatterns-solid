@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dependency Inversion Principle - SOLID</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Dependency Inversion Principle (DIP)</h1>
+        <p>Depend on abstractions, not concretions</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="isp.html">← ISP</a>
+            <a href="../../index.html">Home</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is the Dependency Inversion Principle?</h2>
+            <p>The <strong>Dependency Inversion Principle</strong> states that:</p>
+            <ul>
+                <li>High-level modules should not depend on low-level modules. Both should depend on abstractions.</li>
+                <li>Abstractions should not depend on details. Details should depend on abstractions.</li>
+            </ul>
+
+            <div class="example-bad">
+                <h4>❌ Violating DIP</h4>
+                <p>High-level class depends on low-level concrete class:</p>
+                <div class="code-example">
+                    <pre>
+class MySQLDatabase {
+    connect() {
+        return 'Connected to MySQL';
+    }
+
+    query(sql) {
+        return `MySQL Query: ${sql}`;
+    }
+}
+
+class UserService {
+    constructor() {
+        // Tightly coupled to MySQLDatabase
+        this.database = new MySQLDatabase();
+    }
+
+    getUser(id) {
+        return this.database.query(`SELECT * FROM users WHERE id = ${id}`);
+    }
+}
+
+// Cannot easily switch to PostgreSQL or MongoDB
+// UserService is tightly coupled to MySQL
+const service = new UserService();
+console.log(service.getUser(1));
+                    </pre>
+                </div>
+                <p>Problem: UserService is tightly coupled to MySQLDatabase. Hard to test and change.</p>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Following DIP</h4>
+                <p>Depend on abstraction (interface):</p>
+                <div class="code-example">
+                    <pre>
+// Abstraction
+class Database {
+    connect() {
+        throw new Error('Must implement');
+    }
+
+    query(sql) {
+        throw new Error('Must implement');
+    }
+}
+
+// Low-level modules implement abstraction
+class MySQLDatabase extends Database {
+    connect() {
+        return 'Connected to MySQL';
+    }
+
+    query(sql) {
+        return `MySQL Query: ${sql}`;
+    }
+}
+
+class PostgreSQLDatabase extends Database {
+    connect() {
+        return 'Connected to PostgreSQL';
+    }
+
+    query(sql) {
+        return `PostgreSQL Query: ${sql}`;
+    }
+}
+
+class MongoDatabase extends Database {
+    connect() {
+        return 'Connected to MongoDB';
+    }
+
+    query(sql) {
+        return `MongoDB Query: ${sql}`;
+    }
+}
+
+// High-level module depends on abstraction
+class UserService {
+    constructor(database) {
+        // Dependency injected
+        this.database = database;
+    }
+
+    getUser(id) {
+        return this.database.query(`SELECT * FROM users WHERE id = ${id}`);
+    }
+}
+
+// Easy to switch databases
+const mysqlService = new UserService(new MySQLDatabase());
+const postgresService = new UserService(new PostgreSQLDatabase());
+const mongoService = new UserService(new MongoDatabase());
+
+console.log(mysqlService.getUser(1));
+console.log(postgresService.getUser(1));
+console.log(mongoService.getUser(1));
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Dependency Injection</h3>
+            <p>DIP is often implemented using Dependency Injection:</p>
+            <div class="code-example">
+                <pre>
+// Abstraction
+class Logger {
+    log(message) {
+        throw new Error('Must implement');
+    }
+}
+
+// Concrete implementations
+class ConsoleLogger extends Logger {
+    log(message) {
+        console.log(`[Console] ${message}`);
+    }
+}
+
+class FileLogger extends Logger {
+    log(message) {
+        console.log(`[File] Writing: ${message}`);
+    }
+}
+
+class DatabaseLogger extends Logger {
+    log(message) {
+        console.log(`[Database] Storing: ${message}`);
+    }
+}
+
+// High-level class depends on abstraction
+class Application {
+    constructor(logger) {
+        this.logger = logger;  // Injected dependency
+    }
+
+    run() {
+        this.logger.log('Application started');
+        this.logger.log('Processing...');
+        this.logger.log('Application finished');
+    }
+}
+
+// Easily switch logger implementations
+const app1 = new Application(new ConsoleLogger());
+app1.run();
+
+const app2 = new Application(new FileLogger());
+app2.run();
+
+const app3 = new Application(new DatabaseLogger());
+app3.run();
+                </pre>
+            </div>
+
+            <h3>Benefits of DIP</h3>
+            <ul>
+                <li><strong>Flexibility:</strong> Easy to swap implementations</li>
+                <li><strong>Testability:</strong> Can inject mock dependencies for testing</li>
+                <li><strong>Maintainability:</strong> Changes to low-level modules don't affect high-level modules</li>
+                <li><strong>Reusability:</strong> High-level modules can work with any implementation</li>
+            </ul>
+
+            <h3>Notification System Example</h3>
+            <div class="code-example">
+                <pre>
+// Abstraction
+class NotificationSender {
+    send(message, recipient) {
+        throw new Error('Must implement');
+    }
+}
+
+// Concrete implementations
+class EmailSender extends NotificationSender {
+    send(message, recipient) {
+        return `📧 Email sent to ${recipient}: ${message}`;
+    }
+}
+
+class SMSSender extends NotificationSender {
+    send(message, recipient) {
+        return `📱 SMS sent to ${recipient}: ${message}`;
+    }
+}
+
+class PushSender extends NotificationSender {
+    send(message, recipient) {
+        return `🔔 Push notification sent to ${recipient}: ${message}`;
+    }
+}
+
+// High-level class
+class NotificationService {
+    constructor(sender) {
+        this.sender = sender;
+    }
+
+    notify(message, recipient) {
+        return this.sender.send(message, recipient);
+    }
+}
+
+// Easy to test and swap implementations
+const emailService = new NotificationService(new EmailSender());
+const smsService = new NotificationService(new SMSSender());
+const pushService = new NotificationService(new PushSender());
+
+console.log(emailService.notify('Hello', 'user@example.com'));
+console.log(smsService.notify('Hello', '+1234567890'));
+console.log(pushService.notify('Hello', 'device-123'));
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>See Dependency Inversion in action:</p>
+                <select id="dbType">
+                    <option value="mysql">MySQL</option>
+                    <option value="postgres">PostgreSQL</option>
+                    <option value="mongo">MongoDB</option>
+                </select>
+                <input type="number" id="userId" placeholder="User ID" value="1" />
+                <button class="btn" onclick="fetchUser()">Fetch User</button>
+                <div class="demo-output" id="dipOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Payment System with DIP</h3>
+            <p>Create a payment system following DIP:</p>
+            <ul>
+                <li>Create <code>PaymentGateway</code> abstraction</li>
+                <li>Implement Stripe, PayPal, Square gateways</li>
+                <li>Create <code>CheckoutService</code> that depends on abstraction</li>
+                <li>Should be easy to add new payment gateways</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+// Abstraction
+class PaymentGateway {
+    processPayment(amount, cardInfo) {
+        throw new Error('Must implement');
+    }
+
+    refund(transactionId, amount) {
+        throw new Error('Must implement');
+    }
+}
+
+// Concrete implementations
+class StripeGateway extends PaymentGateway {
+    processPayment(amount, cardInfo) {
+        return `Stripe: Processed $${amount} with card ${cardInfo}`;
+    }
+
+    refund(transactionId, amount) {
+        return `Stripe: Refunded $${amount} for transaction ${transactionId}`;
+    }
+}
+
+class PayPalGateway extends PaymentGateway {
+    processPayment(amount, cardInfo) {
+        return `PayPal: Processed $${amount} with card ${cardInfo}`;
+    }
+
+    refund(transactionId, amount) {
+        return `PayPal: Refunded $${amount} for transaction ${transactionId}`;
+    }
+}
+
+class SquareGateway extends PaymentGateway {
+    processPayment(amount, cardInfo) {
+        return `Square: Processed $${amount} with card ${cardInfo}`;
+    }
+
+    refund(transactionId, amount) {
+        return `Square: Refunded $${amount} for transaction ${transactionId}`;
+    }
+}
+
+// High-level service depends on abstraction
+class CheckoutService {
+    constructor(paymentGateway) {
+        this.gateway = paymentGateway;
+    }
+
+    checkout(amount, cardInfo) {
+        console.log('Processing checkout...');
+        const result = this.gateway.processPayment(amount, cardInfo);
+        console.log(result);
+        return result;
+    }
+
+    processRefund(transactionId, amount) {
+        return this.gateway.refund(transactionId, amount);
+    }
+}
+
+// Easy to switch payment gateways
+const stripeCheckout = new CheckoutService(new StripeGateway());
+const paypalCheckout = new CheckoutService(new PayPalGateway());
+const squareCheckout = new CheckoutService(new SquareGateway());
+
+stripeCheckout.checkout(100, '**** 1234');
+paypalCheckout.checkout(100, '**** 5678');
+squareCheckout.checkout(100, '**** 9012');
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2>Summary of SOLID Principles</h2>
+            <div class="example-good">
+                <ul>
+                    <li><strong>S</strong>ingle Responsibility: One class, one responsibility</li>
+                    <li><strong>O</strong>pen/Closed: Open for extension, closed for modification</li>
+                    <li><strong>L</strong>iskov Substitution: Subtypes must be substitutable</li>
+                    <li><strong>I</strong>nterface Segregation: Many specific interfaces over one general</li>
+                    <li><strong>D</strong>ependency Inversion: Depend on abstractions, not concretions</li>
+                </ul>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="isp.html">← ISP</a>
+            <a href="../../index.html">Home</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class Database {
+            connect() {
+                throw new Error('Must implement');
+            }
+            query(sql) {
+                throw new Error('Must implement');
+            }
+        }
+
+        class MySQLDatabase extends Database {
+            connect() {
+                return 'Connected to MySQL';
+            }
+            query(sql) {
+                return `MySQL: ${sql}`;
+            }
+        }
+
+        class PostgreSQLDatabase extends Database {
+            connect() {
+                return 'Connected to PostgreSQL';
+            }
+            query(sql) {
+                return `PostgreSQL: ${sql}`;
+            }
+        }
+
+        class MongoDatabase extends Database {
+            connect() {
+                return 'Connected to MongoDB';
+            }
+            query(sql) {
+                return `MongoDB: ${sql}`;
+            }
+        }
+
+        class UserService {
+            constructor(database) {
+                this.database = database;
+            }
+
+            getUser(id) {
+                return this.database.query(`SELECT * FROM users WHERE id = ${id}`);
+            }
+        }
+
+        function fetchUser() {
+            const dbType = document.getElementById('dbType').value;
+            const userId = document.getElementById('userId').value;
+
+            let database;
+            switch(dbType) {
+                case 'mysql':
+                    database = new MySQLDatabase();
+                    break;
+                case 'postgres':
+                    database = new PostgreSQLDatabase();
+                    break;
+                case 'mongo':
+                    database = new MongoDatabase();
+                    break;
+            }
+
+            const service = new UserService(database);
+            const connection = database.connect();
+            const result = service.getUser(userId);
+
+            document.getElementById('dipOutput').innerHTML = 
+                `${connection}<br>` +
+                `${result}<br><br>` +
+                '<em>UserService depends on Database abstraction, not concrete implementation!<br>' +
+                'Easy to switch between MySQL, PostgreSQL, and MongoDB!</em>';
+        }
+    </script>
+</body>
+</html>
