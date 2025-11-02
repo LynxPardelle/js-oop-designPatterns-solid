@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abstraction - OOP</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Abstraction</h1>
+        <p>Hiding complexity and showing only essential features</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="polymorphism.html">← Polymorphism</a>
+            <a href="../../index.html">Home</a>
+            <a href="../patterns/creational.html">Design Patterns →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is Abstraction?</h2>
+            <p><strong>Abstraction</strong> is the process of hiding complex implementation details and showing only the necessary features of an object. It helps reduce complexity and allows focusing on what an object does rather than how it does it.</p>
+
+            <h3>Abstraction with Abstract Classes (Simulated)</h3>
+            <p>JavaScript doesn't have built-in abstract classes, but we can simulate them:</p>
+
+            <div class="code-example">
+                <pre>
+class Database {
+    constructor() {
+        if (new.target === Database) {
+            throw new Error('Cannot instantiate abstract class Database');
+        }
+    }
+
+    connect() {
+        throw new Error('Method connect() must be implemented');
+    }
+
+    query(sql) {
+        throw new Error('Method query() must be implemented');
+    }
+
+    disconnect() {
+        throw new Error('Method disconnect() must be implemented');
+    }
+}
+
+class MySQLDatabase extends Database {
+    connect() {
+        return 'Connected to MySQL';
+    }
+
+    query(sql) {
+        return `Executing MySQL query: ${sql}`;
+    }
+
+    disconnect() {
+        return 'Disconnected from MySQL';
+    }
+}
+
+class PostgreSQLDatabase extends Database {
+    connect() {
+        return 'Connected to PostgreSQL';
+    }
+
+    query(sql) {
+        return `Executing PostgreSQL query: ${sql}`;
+    }
+
+    disconnect() {
+        return 'Disconnected from PostgreSQL';
+    }
+}
+
+const mysql = new MySQLDatabase();
+console.log(mysql.connect());
+console.log(mysql.query('SELECT * FROM users'));
+console.log(mysql.disconnect());
+
+// const db = new Database();
+// Error: Cannot instantiate abstract class Database
+                </pre>
+            </div>
+
+            <h3>Interface-like Abstraction</h3>
+            <div class="code-example">
+                <pre>
+// Define an interface-like structure
+class Drawable {
+    draw() {
+        throw new Error('draw() must be implemented');
+    }
+
+    resize(scale) {
+        throw new Error('resize() must be implemented');
+    }
+}
+
+class Circle extends Drawable {
+    constructor(radius) {
+        super();
+        this.radius = radius;
+    }
+
+    draw() {
+        return `Drawing a circle with radius ${this.radius}`;
+    }
+
+    resize(scale) {
+        this.radius *= scale;
+        return `Circle resized to radius ${this.radius}`;
+    }
+}
+
+class Square extends Drawable {
+    constructor(side) {
+        super();
+        this.side = side;
+    }
+
+    draw() {
+        return `Drawing a square with side ${this.side}`;
+    }
+
+    resize(scale) {
+        this.side *= scale;
+        return `Square resized to side ${this.side}`;
+    }
+}
+
+function renderShapes(shapes) {
+    return shapes.map(shape => shape.draw());
+}
+
+const shapes = [new Circle(5), new Square(10)];
+console.log(renderShapes(shapes));
+                </pre>
+            </div>
+
+            <h3>Hiding Implementation Details</h3>
+            <div class="example-good">
+                <div class="code-example">
+                    <pre>
+class CoffeeMachine {
+    #waterLevel = 0;
+    #coffeeLevel = 0;
+
+    constructor() {
+        this.#waterLevel = 100;
+        this.#coffeeLevel = 100;
+    }
+
+    // Public interface - simple and abstract
+    makeCoffee(type = 'espresso') {
+        console.log(`Making ${type}...`);
+        
+        if (!this.#checkResources()) {
+            return 'Not enough resources!';
+        }
+
+        this.#grindBeans();
+        this.#heatWater();
+        this.#brew();
+        this.#updateResources();
+
+        return `Your ${type} is ready! ☕`;
+    }
+
+    // Private implementation details - hidden from user
+    #checkResources() {
+        return this.#waterLevel >= 20 && this.#coffeeLevel >= 10;
+    }
+
+    #grindBeans() {
+        console.log('Grinding coffee beans...');
+    }
+
+    #heatWater() {
+        console.log('Heating water to optimal temperature...');
+    }
+
+    #brew() {
+        console.log('Brewing coffee...');
+    }
+
+    #updateResources() {
+        this.#waterLevel -= 20;
+        this.#coffeeLevel -= 10;
+    }
+
+    // Public method to check status
+    getStatus() {
+        return `Water: ${this.#waterLevel}%, Coffee: ${this.#coffeeLevel}%`;
+    }
+}
+
+const machine = new CoffeeMachine();
+console.log(machine.makeCoffee('cappuccino'));
+// User doesn't need to know about grinding, heating, brewing
+// They just get their coffee!
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Abstraction with Factory Pattern</h3>
+            <div class="code-example">
+                <pre>
+class Vehicle {
+    start() {
+        throw new Error('start() must be implemented');
+    }
+}
+
+class Car extends Vehicle {
+    start() {
+        return 'Car engine started';
+    }
+}
+
+class Motorcycle extends Vehicle {
+    start() {
+        return 'Motorcycle engine started';
+    }
+}
+
+class Bicycle extends Vehicle {
+    start() {
+        return 'Bicycle is ready to ride';
+    }
+}
+
+// Abstract factory - hides object creation complexity
+class VehicleFactory {
+    static createVehicle(type) {
+        switch(type.toLowerCase()) {
+            case 'car':
+                return new Car();
+            case 'motorcycle':
+                return new Motorcycle();
+            case 'bicycle':
+                return new Bicycle();
+            default:
+                throw new Error('Unknown vehicle type');
+        }
+    }
+}
+
+// User doesn't need to know about constructors
+const vehicle1 = VehicleFactory.createVehicle('car');
+const vehicle2 = VehicleFactory.createVehicle('motorcycle');
+
+console.log(vehicle1.start());
+console.log(vehicle2.start());
+                </pre>
+            </div>
+
+            <div class="example-bad">
+                <h4>❌ Without Abstraction</h4>
+                <div class="code-example">
+                    <pre>
+// Exposing too much complexity
+function sendEmail(smtp, port, user, pass, to, subject, body) {
+    // Complex SMTP logic exposed to user
+    const connection = createSMTPConnection(smtp, port);
+    authenticate(connection, user, pass);
+    const message = formatMessage(to, subject, body);
+    send(connection, message);
+    closeConnection(connection);
+}
+                    </pre>
+                </div>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ With Abstraction</h4>
+                <div class="code-example">
+                    <pre>
+class EmailService {
+    #config;
+
+    constructor(config) {
+        this.#config = config;
+    }
+
+    // Simple interface - complexity hidden
+    send(to, subject, body) {
+        return this.#sendEmail(to, subject, body);
+    }
+
+    #sendEmail(to, subject, body) {
+        // All complexity hidden in private methods
+        // User just calls send()
+        return `Email sent to ${to}`;
+    }
+}
+
+const emailService = new EmailService({ /* config */ });
+emailService.send('user@example.com', 'Hello', 'World');
+                    </pre>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Make coffee with an abstract coffee machine:</p>
+                <select id="coffeeType">
+                    <option value="espresso">Espresso</option>
+                    <option value="cappuccino">Cappuccino</option>
+                    <option value="latte">Latte</option>
+                </select>
+                <button class="btn" onclick="makeCoffee()">Make Coffee</button>
+                <button class="btn btn-secondary" onclick="checkMachineStatus()">Check Status</button>
+                <div class="demo-output" id="coffeeOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create an Abstract Payment Processor</h3>
+            <p>Create an abstract payment system:</p>
+            <ul>
+                <li>Abstract <code>PaymentProcessor</code> class with process() method</li>
+                <li>Concrete implementations for different payment methods</li>
+                <li>Hide validation, fee calculation, and transaction details</li>
+                <li>Provide simple interface: process(amount)</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class PaymentProcessor {
+    constructor() {
+        if (new.target === PaymentProcessor) {
+            throw new Error('Cannot instantiate abstract class');
+        }
+    }
+
+    process(amount) {
+        throw new Error('process() must be implemented');
+    }
+}
+
+class CreditCardProcessor extends PaymentProcessor {
+    #validateCard() {
+        return true;
+    }
+
+    #calculateFee(amount) {
+        return amount * 0.029 + 0.30;
+    }
+
+    #chargeCard(amount) {
+        return amount;
+    }
+
+    process(amount) {
+        if (!this.#validateCard()) {
+            return 'Invalid card';
+        }
+        const fee = this.#calculateFee(amount);
+        const total = amount + fee;
+        this.#chargeCard(total);
+        return `Processed $${amount} (fee: $${fee.toFixed(2)})`;
+    }
+}
+
+class PayPalProcessor extends PaymentProcessor {
+    #authenticate() {
+        return true;
+    }
+
+    #calculateFee(amount) {
+        return amount * 0.034 + 0.30;
+    }
+
+    #transfer(amount) {
+        return amount;
+    }
+
+    process(amount) {
+        if (!this.#authenticate()) {
+            return 'Authentication failed';
+        }
+        const fee = this.#calculateFee(amount);
+        const total = amount + fee;
+        this.#transfer(total);
+        return `Processed $${amount} via PayPal (fee: $${fee.toFixed(2)})`;
+    }
+}
+
+const cc = new CreditCardProcessor();
+const pp = new PayPalProcessor();
+
+console.log(cc.process(100));
+console.log(pp.process(100));
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="polymorphism.html">← Polymorphism</a>
+            <a href="../../index.html">Home</a>
+            <a href="../patterns/creational.html">Design Patterns →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class CoffeeMachine {
+            #waterLevel = 100;
+            #coffeeLevel = 100;
+
+            makeCoffee(type) {
+                if (this.#waterLevel < 20 || this.#coffeeLevel < 10) {
+                    return 'Not enough resources! Please refill.';
+                }
+                
+                this.#waterLevel -= 20;
+                this.#coffeeLevel -= 10;
+                
+                return `Your ${type} is ready! ☕ (All the complex brewing process is abstracted away)`;
+            }
+
+            getStatus() {
+                return `Water: ${this.#waterLevel}%, Coffee: ${this.#coffeeLevel}%`;
+            }
+
+            refill() {
+                this.#waterLevel = 100;
+                this.#coffeeLevel = 100;
+                return 'Machine refilled!';
+            }
+        }
+
+        const coffeeMachine = new CoffeeMachine();
+
+        function makeCoffee() {
+            const type = document.getElementById('coffeeType').value;
+            const result = coffeeMachine.makeCoffee(type);
+            document.getElementById('coffeeOutput').innerHTML = result;
+        }
+
+        function checkMachineStatus() {
+            const status = coffeeMachine.getStatus();
+            document.getElementById('coffeeOutput').innerHTML = status;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inheritance - OOP</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Inheritance</h1>
+        <p>Creating new classes from existing ones</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="encapsulation.html">← Encapsulation</a>
+            <a href="../../index.html">Home</a>
+            <a href="polymorphism.html">Polymorphism →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is Inheritance?</h2>
+            <p><strong>Inheritance</strong> allows a class to inherit properties and methods from another class. The inheriting class is called the child or subclass, and the class being inherited from is the parent or superclass.</p>
+
+            <h3>Basic Inheritance with extends</h3>
+            <div class="code-example">
+                <pre>
+class Animal {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    eat() {
+        return `${this.name} is eating`;
+    }
+
+    sleep() {
+        return `${this.name} is sleeping`;
+    }
+
+    makeSound() {
+        return `${this.name} makes a sound`;
+    }
+}
+
+class Dog extends Animal {
+    constructor(name, age, breed) {
+        super(name, age);  // Call parent constructor
+        this.breed = breed;
+    }
+
+    makeSound() {
+        return `${this.name} barks: Woof!`;
+    }
+
+    fetch() {
+        return `${this.name} is fetching the ball`;
+    }
+}
+
+const dog = new Dog('Buddy', 3, 'Golden Retriever');
+console.log(dog.eat());        // Output: "Buddy is eating"
+console.log(dog.makeSound());  // Output: "Buddy barks: Woof!"
+console.log(dog.fetch());      // Output: "Buddy is fetching the ball"
+                </pre>
+            </div>
+
+            <h3>Using super</h3>
+            <p>The <code>super</code> keyword is used to call methods from the parent class.</p>
+
+            <div class="code-example">
+                <pre>
+class Vehicle {
+    constructor(brand, model) {
+        this.brand = brand;
+        this.model = model;
+        this.speed = 0;
+    }
+
+    accelerate(amount) {
+        this.speed += amount;
+        return `Speed: ${this.speed} km/h`;
+    }
+
+    brake(amount) {
+        this.speed = Math.max(0, this.speed - amount);
+        return `Speed: ${this.speed} km/h`;
+    }
+}
+
+class ElectricCar extends Vehicle {
+    constructor(brand, model, batteryCapacity) {
+        super(brand, model);
+        this.batteryCapacity = batteryCapacity;
+        this.batteryLevel = 100;
+    }
+
+    accelerate(amount) {
+        this.batteryLevel -= amount * 0.1;
+        return super.accelerate(amount) + `, Battery: ${this.batteryLevel.toFixed(1)}%`;
+    }
+
+    charge() {
+        this.batteryLevel = 100;
+        return 'Battery fully charged!';
+    }
+}
+
+const tesla = new ElectricCar('Tesla', 'Model 3', 75);
+console.log(tesla.accelerate(50));
+// Output: "Speed: 50 km/h, Battery: 95.0%"
+console.log(tesla.charge());
+// Output: "Battery fully charged!"
+                </pre>
+            </div>
+
+            <h3>Multiple Levels of Inheritance</h3>
+            <div class="code-example">
+                <pre>
+class Shape {
+    constructor(color) {
+        this.color = color;
+    }
+
+    describe() {
+        return `A ${this.color} shape`;
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(color, width, height) {
+        super(color);
+        this.width = width;
+        this.height = height;
+    }
+
+    area() {
+        return this.width * this.height;
+    }
+
+    describe() {
+        return `${super.describe()} - Rectangle ${this.width}x${this.height}`;
+    }
+}
+
+class Square extends Rectangle {
+    constructor(color, side) {
+        super(color, side, side);
+    }
+
+    describe() {
+        return `${super.describe()} - Actually a square!`;
+    }
+}
+
+const square = new Square('red', 5);
+console.log(square.describe());
+// Output: "A red shape - Rectangle 5x5 - Actually a square!"
+console.log(square.area());
+// Output: 25
+                </pre>
+            </div>
+
+            <h3>Method Overriding</h3>
+            <p>Child classes can override parent methods to provide specific implementations.</p>
+
+            <div class="example-good">
+                <div class="code-example">
+                    <pre>
+class Employee {
+    constructor(name, baseSalary) {
+        this.name = name;
+        this.baseSalary = baseSalary;
+    }
+
+    calculateSalary() {
+        return this.baseSalary;
+    }
+
+    getInfo() {
+        return `${this.name}: $${this.calculateSalary()}`;
+    }
+}
+
+class Manager extends Employee {
+    constructor(name, baseSalary, bonus) {
+        super(name, baseSalary);
+        this.bonus = bonus;
+    }
+
+    calculateSalary() {
+        return this.baseSalary + this.bonus;
+    }
+}
+
+class SalesEmployee extends Employee {
+    constructor(name, baseSalary, commission) {
+        super(name, baseSalary);
+        this.commission = commission;
+    }
+
+    calculateSalary() {
+        return this.baseSalary + this.commission;
+    }
+}
+
+const emp = new Employee('John', 50000);
+const mgr = new Manager('Sarah', 60000, 15000);
+const sales = new SalesEmployee('Mike', 40000, 20000);
+
+console.log(emp.getInfo());    // Output: "John: $50000"
+console.log(mgr.getInfo());    // Output: "Sarah: $75000"
+console.log(sales.getInfo());  // Output: "Mike: $60000"
+                    </pre>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Create different types of animals:</p>
+                <select id="animalType">
+                    <option value="dog">Dog</option>
+                    <option value="cat">Cat</option>
+                    <option value="bird">Bird</option>
+                </select>
+                <input type="text" id="animalName" placeholder="Animal name" />
+                <button class="btn" onclick="createAnimal()">Create Animal</button>
+                <button class="btn btn-secondary" onclick="makeAnimalSound()">Make Sound</button>
+                <div class="demo-output" id="animalOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create a Vehicle Hierarchy</h3>
+            <p>Create a hierarchy with:</p>
+            <ul>
+                <li>Base class <code>Vehicle</code> with brand, year, and start() method</li>
+                <li><code>Car</code> extends Vehicle, adds doors property</li>
+                <li><code>Motorcycle</code> extends Vehicle, adds hasHelmet property</li>
+                <li>Override start() method in each subclass with specific messages</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class Vehicle {
+    constructor(brand, year) {
+        this.brand = brand;
+        this.year = year;
+    }
+
+    start() {
+        return `${this.year} ${this.brand} is starting...`;
+    }
+}
+
+class Car extends Vehicle {
+    constructor(brand, year, doors) {
+        super(brand, year);
+        this.doors = doors;
+    }
+
+    start() {
+        return `${super.start()} The ${this.doors}-door car engine roars!`;
+    }
+}
+
+class Motorcycle extends Vehicle {
+    constructor(brand, year, hasHelmet) {
+        super(brand, year);
+        this.hasHelmet = hasHelmet;
+    }
+
+    start() {
+        const helmetMsg = this.hasHelmet ? 'Helmet on!' : 'Put on a helmet!';
+        return `${super.start()} ${helmetMsg} The motorcycle revs up!`;
+    }
+}
+
+const car = new Car('Toyota', 2023, 4);
+const moto = new Motorcycle('Harley', 2022, true);
+
+console.log(car.start());
+console.log(moto.start());
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="encapsulation.html">← Encapsulation</a>
+            <a href="../../index.html">Home</a>
+            <a href="polymorphism.html">Polymorphism →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class Animal {
+            constructor(name) {
+                this.name = name;
+            }
+            makeSound() {
+                return `${this.name} makes a sound`;
+            }
+        }
+
+        class Dog extends Animal {
+            makeSound() {
+                return `${this.name} barks: Woof! Woof!`;
+            }
+        }
+
+        class Cat extends Animal {
+            makeSound() {
+                return `${this.name} meows: Meow!`;
+            }
+        }
+
+        class Bird extends Animal {
+            makeSound() {
+                return `${this.name} chirps: Tweet! Tweet!`;
+            }
+        }
+
+        let currentAnimal = null;
+
+        function createAnimal() {
+            const type = document.getElementById('animalType').value;
+            const name = document.getElementById('animalName').value;
+            
+            if (!name) {
+                document.getElementById('animalOutput').innerHTML = 'Please enter a name!';
+                return;
+            }
+
+            switch(type) {
+                case 'dog':
+                    currentAnimal = new Dog(name);
+                    break;
+                case 'cat':
+                    currentAnimal = new Cat(name);
+                    break;
+                case 'bird':
+                    currentAnimal = new Bird(name);
+                    break;
+            }
+
+            document.getElementById('animalOutput').innerHTML = `Created a ${type} named ${name}!`;
+        }
+
+        function makeAnimalSound() {
+            if (!currentAnimal) {
+                document.getElementById('animalOutput').innerHTML = 'Create an animal first!';
+                return;
+            }
+            document.getElementById('animalOutput').innerHTML = currentAnimal.makeSound();
+        }
+    </script>
+</body>
+</html>

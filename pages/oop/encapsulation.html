@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encapsulation - OOP</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Encapsulation</h1>
+        <p>Hiding internal details and protecting data integrity</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="classes.html">← Classes</a>
+            <a href="../../index.html">Home</a>
+            <a href="inheritance.html">Inheritance →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is Encapsulation?</h2>
+            <p><strong>Encapsulation</strong> is the bundling of data and methods that operate on that data within a single unit (class), while restricting direct access to some of the object's components. This is achieved through access control (private and public members).</p>
+
+            <h3>Private Fields (Using # prefix)</h3>
+            <p>JavaScript supports private fields using the <code>#</code> prefix. Private fields cannot be accessed from outside the class.</p>
+
+            <div class="code-example">
+                <pre>
+class BankAccount {
+    #balance;  // Private field
+    #accountNumber;
+
+    constructor(accountNumber, initialBalance) {
+        this.#accountNumber = accountNumber;
+        this.#balance = initialBalance;
+    }
+
+    deposit(amount) {
+        if (amount > 0) {
+            this.#balance += amount;
+            return `Deposited $${amount}. New balance: $${this.#balance}`;
+        }
+        return 'Invalid deposit amount';
+    }
+
+    withdraw(amount) {
+        if (amount > 0 && amount <= this.#balance) {
+            this.#balance -= amount;
+            return `Withdrew $${amount}. New balance: $${this.#balance}`;
+        }
+        return 'Invalid withdrawal amount or insufficient funds';
+    }
+
+    getBalance() {
+        return this.#balance;
+    }
+
+    getAccountInfo() {
+        return `Account ${this.#accountNumber}: $${this.#balance}`;
+    }
+}
+
+const account = new BankAccount('123456', 1000);
+console.log(account.deposit(500));
+// Output: "Deposited $500. New balance: $1500"
+
+console.log(account.withdraw(200));
+// Output: "Withdrew $200. New balance: $1300"
+
+// console.log(account.#balance);
+// Error: Private field '#balance' must be declared in an enclosing class
+                </pre>
+            </div>
+
+            <h3>Using Closures for Privacy (Traditional Approach)</h3>
+            <p>Before private fields, closures were used to create private data:</p>
+
+            <div class="code-example">
+                <pre>
+function createCounter() {
+    let count = 0;  // Private variable
+
+    return {
+        increment() {
+            count++;
+            return count;
+        },
+        decrement() {
+            count--;
+            return count;
+        },
+        getCount() {
+            return count;
+        }
+    };
+}
+
+const counter = createCounter();
+console.log(counter.increment());  // Output: 1
+console.log(counter.increment());  // Output: 2
+console.log(counter.getCount());   // Output: 2
+
+// console.log(counter.count);
+// Output: undefined (count is private)
+                </pre>
+            </div>
+
+            <h3>Protected Members (Convention with _)</h3>
+            <p>By convention, properties starting with <code>_</code> are considered protected (not truly private, but shouldn't be accessed directly).</p>
+
+            <div class="code-example">
+                <pre>
+class User {
+    constructor(username, password) {
+        this.username = username;
+        this._password = password;  // Protected by convention
+        this._loginAttempts = 0;
+    }
+
+    login(password) {
+        if (this._password === password) {
+            this._loginAttempts = 0;
+            return 'Login successful';
+        }
+        this._loginAttempts++;
+        return `Login failed. Attempts: ${this._loginAttempts}`;
+    }
+
+    changePassword(oldPassword, newPassword) {
+        if (this._password === oldPassword) {
+            this._password = newPassword;
+            return 'Password changed successfully';
+        }
+        return 'Incorrect old password';
+    }
+}
+
+const user = new User('alice', 'secret123');
+console.log(user.login('wrong'));
+// Output: "Login failed. Attempts: 1"
+
+console.log(user.login('secret123'));
+// Output: "Login successful"
+                </pre>
+            </div>
+
+            <h3>Benefits of Encapsulation</h3>
+            <ul>
+                <li><strong>Data Protection:</strong> Prevents unauthorized access and modification</li>
+                <li><strong>Validation:</strong> Control how data is set and retrieved</li>
+                <li><strong>Flexibility:</strong> Change internal implementation without affecting external code</li>
+                <li><strong>Maintainability:</strong> Easier to update and debug</li>
+            </ul>
+
+            <div class="example-bad">
+                <h4>❌ Bad Example (No Encapsulation)</h4>
+                <div class="code-example">
+                    <pre>
+class Product {
+    constructor(name, price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+const product = new Product('Laptop', 1000);
+product.price = -500;  // No validation! Invalid price allowed
+console.log(product.price);  // Output: -500
+                    </pre>
+                </div>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Good Example (With Encapsulation)</h4>
+                <div class="code-example">
+                    <pre>
+class Product {
+    #price;
+
+    constructor(name, price) {
+        this.name = name;
+        this.#setPrice(price);
+    }
+
+    #setPrice(value) {
+        if (value < 0) {
+            throw new Error('Price cannot be negative');
+        }
+        this.#price = value;
+    }
+
+    getPrice() {
+        return this.#price;
+    }
+
+    setPrice(value) {
+        this.#setPrice(value);
+    }
+
+    applyDiscount(percentage) {
+        if (percentage > 0 && percentage < 100) {
+            this.#price = this.#price * (1 - percentage / 100);
+        }
+    }
+}
+
+const product = new Product('Laptop', 1000);
+product.applyDiscount(10);
+console.log(product.getPrice());  // Output: 900
+
+// product.setPrice(-500);
+// Error: Price cannot be negative
+                    </pre>
+                </div>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Manage a bank account with encapsulation:</p>
+                <input type="number" id="depositAmount" placeholder="Amount to deposit" />
+                <button class="btn" onclick="makeDeposit()">Deposit</button>
+                <input type="number" id="withdrawAmount" placeholder="Amount to withdraw" />
+                <button class="btn btn-secondary" onclick="makeWithdrawal()">Withdraw</button>
+                <div class="demo-output" id="bankOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create a Password Manager</h3>
+            <p>Create a <code>PasswordManager</code> class with:</p>
+            <ul>
+                <li>Private field for storing passwords</li>
+                <li>Method to add a password (with validation: min 8 characters)</li>
+                <li>Method to verify a password</li>
+                <li>Method to change password (requires old password)</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class PasswordManager {
+    #passwords = {};
+
+    addPassword(service, password) {
+        if (password.length < 8) {
+            return 'Password must be at least 8 characters';
+        }
+        this.#passwords[service] = password;
+        return `Password for ${service} added successfully`;
+    }
+
+    verifyPassword(service, password) {
+        if (this.#passwords[service] === password) {
+            return 'Password verified';
+        }
+        return 'Incorrect password';
+    }
+
+    changePassword(service, oldPassword, newPassword) {
+        if (this.#passwords[service] !== oldPassword) {
+            return 'Incorrect old password';
+        }
+        if (newPassword.length < 8) {
+            return 'New password must be at least 8 characters';
+        }
+        this.#passwords[service] = newPassword;
+        return 'Password changed successfully';
+    }
+
+    hasService(service) {
+        return service in this.#passwords;
+    }
+}
+
+const pm = new PasswordManager();
+console.log(pm.addPassword('email', 'mySecret123'));
+console.log(pm.verifyPassword('email', 'mySecret123'));
+console.log(pm.changePassword('email', 'mySecret123', 'newSecret456'));
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="classes.html">← Classes</a>
+            <a href="../../index.html">Home</a>
+            <a href="inheritance.html">Inheritance →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class BankAccount {
+            #balance;
+
+            constructor(initialBalance) {
+                this.#balance = initialBalance;
+            }
+
+            deposit(amount) {
+                if (amount > 0) {
+                    this.#balance += amount;
+                    return `Deposited $${amount}. New balance: $${this.#balance}`;
+                }
+                return 'Invalid deposit amount';
+            }
+
+            withdraw(amount) {
+                if (amount > 0 && amount <= this.#balance) {
+                    this.#balance -= amount;
+                    return `Withdrew $${amount}. New balance: $${this.#balance}`;
+                }
+                return 'Invalid withdrawal amount or insufficient funds';
+            }
+
+            getBalance() {
+                return this.#balance;
+            }
+        }
+
+        const bankAccount = new BankAccount(1000);
+
+        function makeDeposit() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (!amount) {
+                document.getElementById('bankOutput').innerHTML = 'Please enter an amount!';
+                return;
+            }
+            document.getElementById('bankOutput').innerHTML = bankAccount.deposit(amount);
+            document.getElementById('depositAmount').value = '';
+        }
+
+        function makeWithdrawal() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            if (!amount) {
+                document.getElementById('bankOutput').innerHTML = 'Please enter an amount!';
+                return;
+            }
+            document.getElementById('bankOutput').innerHTML = bankAccount.withdraw(amount);
+            document.getElementById('withdrawAmount').value = '';
+        }
+
+        // Initialize display
+        document.getElementById('bankOutput').innerHTML = `Current balance: $${bankAccount.getBalance()}`;
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liskov Substitution Principle - SOLID</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Liskov Substitution Principle (LSP)</h1>
+        <p>Objects should be replaceable with their subtypes</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="ocp.html">← OCP</a>
+            <a href="../../index.html">Home</a>
+            <a href="isp.html">ISP →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is the Liskov Substitution Principle?</h2>
+            <p>The <strong>Liskov Substitution Principle</strong> states that objects of a superclass should be replaceable with objects of a subclass without breaking the application. Subtypes must be substitutable for their base types.</p>
+
+            <div class="example-bad">
+                <h4>❌ Violating LSP</h4>
+                <div class="code-example">
+                    <pre>
+class Bird {
+    fly() {
+        return 'Flying high!';
+    }
+}
+
+class Duck extends Bird {
+    fly() {
+        return 'Duck flying!';
+    }
+}
+
+class Penguin extends Bird {
+    fly() {
+        // Penguins can't fly!
+        throw new Error('Penguins cannot fly');
+    }
+}
+
+function makeBirdFly(bird) {
+    return bird.fly();  // Will break for Penguin
+}
+
+const duck = new Duck();
+const penguin = new Penguin();
+
+console.log(makeBirdFly(duck));     // Works
+console.log(makeBirdFly(penguin));  // Error! Violates LSP
+                    </pre>
+                </div>
+                <p>Problem: Penguin breaks the contract established by Bird.</p>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Following LSP</h4>
+                <div class="code-example">
+                    <pre>
+class Bird {
+    move() {
+        return 'Moving...';
+    }
+}
+
+class FlyingBird extends Bird {
+    fly() {
+        return 'Flying high!';
+    }
+
+    move() {
+        return this.fly();
+    }
+}
+
+class Duck extends FlyingBird {
+    fly() {
+        return 'Duck flying!';
+    }
+}
+
+class Penguin extends Bird {
+    swim() {
+        return 'Swimming!';
+    }
+
+    move() {
+        return this.swim();
+    }
+}
+
+function makeBirdMove(bird) {
+    return bird.move();  // Works for all birds
+}
+
+const duck = new Duck();
+const penguin = new Penguin();
+
+console.log(makeBirdMove(duck));     // "Duck flying!"
+console.log(makeBirdMove(penguin));  // "Swimming!"
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Rectangle-Square Problem</h3>
+            <div class="example-bad">
+                <h4>❌ Classic LSP Violation</h4>
+                <div class="code-example">
+                    <pre>
+class Rectangle {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+    }
+
+    setWidth(width) {
+        this.width = width;
+    }
+
+    setHeight(height) {
+        this.height = height;
+    }
+
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class Square extends Rectangle {
+    setWidth(width) {
+        this.width = width;
+        this.height = width;  // Square must have equal sides
+    }
+
+    setHeight(height) {
+        this.width = height;
+        this.height = height;
+    }
+}
+
+function testRectangle(rectangle) {
+    rectangle.setWidth(5);
+    rectangle.setHeight(4);
+    console.log(`Expected: 20, Got: ${rectangle.area()}`);
+}
+
+testRectangle(new Rectangle(0, 0));  // Works: 20
+testRectangle(new Square(0, 0));     // Fails: 16 (not 20!)
+                    </pre>
+                </div>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Solution</h4>
+                <div class="code-example">
+                    <pre>
+class Shape {
+    area() {
+        throw new Error('Must be implemented');
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(width, height) {
+        super();
+        this.width = width;
+        this.height = height;
+    }
+
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class Square extends Shape {
+    constructor(side) {
+        super();
+        this.side = side;
+    }
+
+    area() {
+        return this.side * this.side;
+    }
+}
+
+function calculateArea(shape) {
+    return shape.area();
+}
+
+console.log(calculateArea(new Rectangle(5, 4)));  // 20
+console.log(calculateArea(new Square(5)));        // 25
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Preconditions and Postconditions</h3>
+            <p>Subtypes must not strengthen preconditions or weaken postconditions.</p>
+            <div class="code-example">
+                <pre>
+class Account {
+    constructor(balance) {
+        this.balance = balance;
+    }
+
+    withdraw(amount) {
+        // Precondition: amount > 0
+        if (amount <= 0) {
+            throw new Error('Amount must be positive');
+        }
+        
+        // Postcondition: balance decreased by amount
+        if (this.balance >= amount) {
+            this.balance -= amount;
+            return this.balance;
+        }
+        throw new Error('Insufficient funds');
+    }
+}
+
+class SavingsAccount extends Account {
+    withdraw(amount) {
+        // Same precondition: amount > 0
+        if (amount <= 0) {
+            throw new Error('Amount must be positive');
+        }
+
+        // Additional fee, but same postcondition behavior
+        const fee = 2;
+        const total = amount + fee;
+        
+        if (this.balance >= total) {
+            this.balance -= total;
+            return this.balance;
+        }
+        throw new Error('Insufficient funds including fee');
+    }
+}
+
+function processWithdrawal(account, amount) {
+    return account.withdraw(amount);
+}
+
+const regular = new Account(100);
+const savings = new SavingsAccount(100);
+
+console.log(processWithdrawal(regular, 50));   // 50
+console.log(processWithdrawal(savings, 50));   // 48 (50 + 2 fee)
+// Both work correctly with processWithdrawal
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Test LSP with different bird types:</p>
+                <select id="birdType">
+                    <option value="duck">Duck (Flying)</option>
+                    <option value="eagle">Eagle (Flying)</option>
+                    <option value="penguin">Penguin (Swimming)</option>
+                </select>
+                <button class="btn" onclick="moveBird()">Make Bird Move</button>
+                <div class="demo-output" id="birdOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Vehicle Hierarchy</h3>
+            <p>Fix this LSP violation:</p>
+            <div class="code-example">
+                <pre>
+class Vehicle {
+    startEngine() {
+        return 'Engine started';
+    }
+}
+
+class Car extends Vehicle {
+    startEngine() {
+        return 'Car engine started';
+    }
+}
+
+class Bicycle extends Vehicle {
+    startEngine() {
+        throw new Error('Bicycles dont have engines!');
+    }
+}
+                </pre>
+            </div>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class Vehicle {
+    start() {
+        return 'Vehicle started';
+    }
+}
+
+class MotorizedVehicle extends Vehicle {
+    startEngine() {
+        return 'Engine started';
+    }
+
+    start() {
+        return this.startEngine();
+    }
+}
+
+class Car extends MotorizedVehicle {
+    startEngine() {
+        return 'Car engine started';
+    }
+}
+
+class Bicycle extends Vehicle {
+    start() {
+        return 'Bicycle is ready to ride';
+    }
+}
+
+function startVehicle(vehicle) {
+    return vehicle.start();
+}
+
+console.log(startVehicle(new Car()));      // "Car engine started"
+console.log(startVehicle(new Bicycle()));  // "Bicycle is ready to ride"
+// Both work correctly!
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="ocp.html">← OCP</a>
+            <a href="../../index.html">Home</a>
+            <a href="isp.html">ISP →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class Bird {
+            move() {
+                return 'Moving...';
+            }
+        }
+
+        class FlyingBird extends Bird {
+            fly() {
+                return 'Flying high!';
+            }
+            move() {
+                return this.fly();
+            }
+        }
+
+        class Duck extends FlyingBird {
+            fly() {
+                return '🦆 Duck is flying!';
+            }
+        }
+
+        class Eagle extends FlyingBird {
+            fly() {
+                return '🦅 Eagle soaring through the sky!';
+            }
+        }
+
+        class Penguin extends Bird {
+            swim() {
+                return '🐧 Penguin is swimming!';
+            }
+            move() {
+                return this.swim();
+            }
+        }
+
+        function moveBird() {
+            const type = document.getElementById('birdType').value;
+            let bird;
+
+            switch(type) {
+                case 'duck':
+                    bird = new Duck();
+                    break;
+                case 'eagle':
+                    bird = new Eagle();
+                    break;
+                case 'penguin':
+                    bird = new Penguin();
+                    break;
+            }
+
+            // LSP: All birds can be used interchangeably
+            document.getElementById('birdOutput').innerHTML = 
+                bird.move() + '<br><br>' +
+                '<em>LSP allows all bird types to be used interchangeably with move() method!</em>';
+        }
+    </script>
+</body>
+</html>

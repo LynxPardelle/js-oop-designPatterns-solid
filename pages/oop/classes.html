@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes and Objects - OOP</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Classes and Objects</h1>
+        <p>Understanding the foundation of Object-Oriented Programming</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="encapsulation.html">Encapsulation →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What are Classes and Objects?</h2>
+            <p>A <strong>class</strong> is a blueprint for creating objects. An <strong>object</strong> is an instance of a class that contains data (properties) and behavior (methods).</p>
+
+            <h3>Basic Class Definition</h3>
+            <div class="code-example">
+                <pre>
+class Person {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    greet() {
+        return `Hello, my name is ${this.name} and I'm ${this.age} years old.`;
+    }
+
+    haveBirthday() {
+        this.age++;
+        return `Happy Birthday! I'm now ${this.age} years old.`;
+    }
+}
+
+// Creating objects (instances)
+const person1 = new Person('Alice', 25);
+const person2 = new Person('Bob', 30);
+
+console.log(person1.greet());
+// Output: "Hello, my name is Alice and I'm 25 years old."
+
+console.log(person2.haveBirthday());
+// Output: "Happy Birthday! I'm now 31 years old."
+                </pre>
+            </div>
+
+            <h3>Constructor Method</h3>
+            <p>The <code>constructor</code> is a special method that runs when creating a new instance. It initializes the object's properties.</p>
+
+            <div class="code-example">
+                <pre>
+class Car {
+    constructor(brand, model, year) {
+        this.brand = brand;
+        this.model = model;
+        this.year = year;
+        this.mileage = 0;
+    }
+
+    drive(miles) {
+        this.mileage += miles;
+        return `Drove ${miles} miles. Total: ${this.mileage}`;
+    }
+
+    getInfo() {
+        return `${this.year} ${this.brand} ${this.model} - ${this.mileage} miles`;
+    }
+}
+
+const myCar = new Car('Toyota', 'Camry', 2022);
+console.log(myCar.getInfo());
+// Output: "2022 Toyota Camry - 0 miles"
+
+myCar.drive(100);
+console.log(myCar.getInfo());
+// Output: "2022 Toyota Camry - 100 miles"
+                </pre>
+            </div>
+
+            <h3>Static Methods</h3>
+            <p>Static methods belong to the class itself, not to instances. They're called on the class, not on objects.</p>
+
+            <div class="code-example">
+                <pre>
+class MathHelper {
+    static add(a, b) {
+        return a + b;
+    }
+
+    static multiply(a, b) {
+        return a * b;
+    }
+
+    static square(x) {
+        return x * x;
+    }
+}
+
+// Call static methods on the class itself
+console.log(MathHelper.add(5, 3));        // Output: 8
+console.log(MathHelper.multiply(4, 7));   // Output: 28
+console.log(MathHelper.square(5));        // Output: 25
+                </pre>
+            </div>
+
+            <h3>Getters and Setters</h3>
+            <p>Getters and setters allow you to define methods that are accessed like properties.</p>
+
+            <div class="code-example">
+                <pre>
+class Temperature {
+    constructor(celsius) {
+        this._celsius = celsius;
+    }
+
+    get celsius() {
+        return this._celsius;
+    }
+
+    set celsius(value) {
+        if (value < -273.15) {
+            throw new Error('Temperature cannot be below absolute zero');
+        }
+        this._celsius = value;
+    }
+
+    get fahrenheit() {
+        return (this._celsius * 9/5) + 32;
+    }
+
+    set fahrenheit(value) {
+        this._celsius = (value - 32) * 5/9;
+    }
+}
+
+const temp = new Temperature(25);
+console.log(temp.celsius);      // Output: 25
+console.log(temp.fahrenheit);   // Output: 77
+
+temp.fahrenheit = 86;
+console.log(temp.celsius);      // Output: 30
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Create a person and see them greet you:</p>
+                <input type="text" id="personName" placeholder="Enter name" />
+                <input type="number" id="personAge" placeholder="Enter age" />
+                <button class="btn" onclick="createPerson()">Create Person</button>
+                <button class="btn btn-secondary" onclick="celebrateBirthday()">Birthday!</button>
+                <div class="demo-output" id="personOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Create a Book Class</h3>
+            <p>Create a <code>Book</code> class with the following:</p>
+            <ul>
+                <li>Properties: title, author, pages, currentPage (starts at 0)</li>
+                <li>Method: read(numPages) - increases currentPage</li>
+                <li>Getter: percentRead - returns percentage of book read</li>
+                <li>Method: getInfo() - returns book information</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class Book {
+    constructor(title, author, pages) {
+        this.title = title;
+        this.author = author;
+        this.pages = pages;
+        this.currentPage = 0;
+    }
+
+    read(numPages) {
+        this.currentPage = Math.min(this.currentPage + numPages, this.pages);
+        return `Read ${numPages} pages. Now on page ${this.currentPage}`;
+    }
+
+    get percentRead() {
+        return ((this.currentPage / this.pages) * 100).toFixed(1);
+    }
+
+    getInfo() {
+        return `"${this.title}" by ${this.author} - ${this.percentRead}% complete`;
+    }
+}
+
+const myBook = new Book('1984', 'George Orwell', 328);
+console.log(myBook.getInfo());
+// Output: "1984" by George Orwell - 0.0% complete
+
+myBook.read(100);
+console.log(myBook.getInfo());
+// Output: "1984" by George Orwell - 30.5% complete
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="../../index.html">← Home</a>
+            <a href="encapsulation.html">Encapsulation →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        let currentPerson = null;
+
+        function createPerson() {
+            const name = document.getElementById('personName').value;
+            const age = parseInt(document.getElementById('personAge').value);
+            
+            if (!name || !age) {
+                document.getElementById('personOutput').innerHTML = 'Please enter both name and age!';
+                return;
+            }
+
+            class Person {
+                constructor(name, age) {
+                    this.name = name;
+                    this.age = age;
+                }
+                greet() {
+                    return `Hello, my name is ${this.name} and I'm ${this.age} years old.`;
+                }
+                haveBirthday() {
+                    this.age++;
+                    return `Happy Birthday! I'm now ${this.age} years old.`;
+                }
+            }
+
+            currentPerson = new Person(name, age);
+            document.getElementById('personOutput').innerHTML = currentPerson.greet();
+        }
+
+        function celebrateBirthday() {
+            if (!currentPerson) {
+                document.getElementById('personOutput').innerHTML = 'Create a person first!';
+                return;
+            }
+            document.getElementById('personOutput').innerHTML = currentPerson.haveBirthday();
+        }
+    </script>
+</body>
+</html>

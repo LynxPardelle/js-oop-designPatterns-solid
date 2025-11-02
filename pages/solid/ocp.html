@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open/Closed Principle - SOLID</title>
+    <link rel="stylesheet" href="../../styles/main.css">
+</head>
+<body>
+    <header>
+        <h1>Open/Closed Principle (OCP)</h1>
+        <p>Open for extension, closed for modification</p>
+    </header>
+
+    <main>
+        <nav class="nav">
+            <a href="srp.html">← SRP</a>
+            <a href="../../index.html">Home</a>
+            <a href="lsp.html">LSP →</a>
+        </nav>
+
+        <div class="content">
+            <h2>What is the Open/Closed Principle?</h2>
+            <p>The <strong>Open/Closed Principle</strong> states that software entities should be open for extension but closed for modification. You should be able to add new functionality without changing existing code.</p>
+
+            <div class="example-bad">
+                <h4>❌ Violating OCP</h4>
+                <p>Modifying existing code to add new functionality:</p>
+                <div class="code-example">
+                    <pre>
+class DiscountCalculator {
+    calculate(customer, amount) {
+        if (customer.type === 'regular') {
+            return amount * 0.95;  // 5% discount
+        } else if (customer.type === 'premium') {
+            return amount * 0.90;  // 10% discount
+        } else if (customer.type === 'vip') {
+            return amount * 0.80;  // 20% discount
+        }
+        // Adding new customer type requires modifying this class!
+        return amount;
+    }
+}
+                    </pre>
+                </div>
+                <p>Problem: Adding a new customer type requires modifying the class.</p>
+            </div>
+
+            <div class="example-good">
+                <h4>✓ Following OCP</h4>
+                <p>Extending functionality without modifying existing code:</p>
+                <div class="code-example">
+                    <pre>
+class Customer {
+    constructor(type) {
+        this.type = type;
+    }
+
+    getDiscount() {
+        throw new Error('Must be implemented by subclass');
+    }
+}
+
+class RegularCustomer extends Customer {
+    constructor() {
+        super('regular');
+    }
+
+    getDiscount() {
+        return 0.05;  // 5%
+    }
+}
+
+class PremiumCustomer extends Customer {
+    constructor() {
+        super('premium');
+    }
+
+    getDiscount() {
+        return 0.10;  // 10%
+    }
+}
+
+class VIPCustomer extends Customer {
+    constructor() {
+        super('vip');
+    }
+
+    getDiscount() {
+        return 0.20;  // 20%
+    }
+}
+
+// Calculator is now closed for modification
+class DiscountCalculator {
+    calculate(customer, amount) {
+        return amount * (1 - customer.getDiscount());
+    }
+}
+
+// Adding new customer type doesn't modify existing classes
+class GoldCustomer extends Customer {
+    constructor() {
+        super('gold');
+    }
+
+    getDiscount() {
+        return 0.15;  // 15%
+    }
+}
+
+const calculator = new DiscountCalculator();
+console.log(calculator.calculate(new RegularCustomer(), 100));  // 95
+console.log(calculator.calculate(new VIPCustomer(), 100));      // 80
+console.log(calculator.calculate(new GoldCustomer(), 100));     // 85
+                    </pre>
+                </div>
+            </div>
+
+            <h3>Strategy Pattern for OCP</h3>
+            <div class="code-example">
+                <pre>
+class ShippingCostCalculator {
+    calculate(strategy, order) {
+        return strategy.calculate(order);
+    }
+}
+
+class StandardShipping {
+    calculate(order) {
+        return order.weight * 5;
+    }
+}
+
+class ExpressShipping {
+    calculate(order) {
+        return order.weight * 10;
+    }
+}
+
+class OvernightShipping {
+    calculate(order) {
+        return order.weight * 20;
+    }
+}
+
+// Easy to add new shipping methods without modifying calculator
+class SameDayShipping {
+    calculate(order) {
+        return order.weight * 30;
+    }
+}
+
+const calculator = new ShippingCostCalculator();
+const order = { weight: 5 };
+
+console.log(calculator.calculate(new StandardShipping(), order));   // 25
+console.log(calculator.calculate(new ExpressShipping(), order));    // 50
+console.log(calculator.calculate(new SameDayShipping(), order));    // 150
+                </pre>
+            </div>
+
+            <h3>Plugin Architecture Example</h3>
+            <div class="code-example">
+                <pre>
+class Logger {
+    constructor() {
+        this.handlers = [];
+    }
+
+    addHandler(handler) {
+        this.handlers.push(handler);
+    }
+
+    log(message) {
+        this.handlers.forEach(handler => handler.handle(message));
+    }
+}
+
+class ConsoleHandler {
+    handle(message) {
+        console.log(`Console: ${message}`);
+    }
+}
+
+class FileHandler {
+    handle(message) {
+        console.log(`File: Writing "${message}" to file`);
+    }
+}
+
+class EmailHandler {
+    handle(message) {
+        console.log(`Email: Sending "${message}" via email`);
+    }
+}
+
+// Logger is closed for modification
+// New handlers can be added without changing Logger
+class DatabaseHandler {
+    handle(message) {
+        console.log(`Database: Storing "${message}" in database`);
+    }
+}
+
+const logger = new Logger();
+logger.addHandler(new ConsoleHandler());
+logger.addHandler(new FileHandler());
+logger.addHandler(new DatabaseHandler());
+
+logger.log('Application started');
+                </pre>
+            </div>
+
+            <div class="interactive-demo">
+                <h3>Try it Yourself!</h3>
+                <p>Calculate discounts for different customer types:</p>
+                <select id="customerType">
+                    <option value="regular">Regular (5%)</option>
+                    <option value="premium">Premium (10%)</option>
+                    <option value="vip">VIP (20%)</option>
+                    <option value="gold">Gold (15%)</option>
+                </select>
+                <input type="number" id="amount" placeholder="Amount" value="100" />
+                <button class="btn" onclick="calculateDiscount()">Calculate</button>
+                <div class="demo-output" id="discountOutput"></div>
+            </div>
+        </div>
+
+        <div class="exercise">
+            <h3>Exercise: Payment Processing System</h3>
+            <p>Create a payment system following OCP:</p>
+            <ul>
+                <li>Base <code>PaymentMethod</code> class</li>
+                <li>Different payment methods (CreditCard, PayPal, Bitcoin)</li>
+                <li><code>PaymentProcessor</code> that works with any payment method</li>
+                <li>Should be easy to add new payment methods</li>
+            </ul>
+            <button class="btn" onclick="toggleSolution('solution1')">Show Solution</button>
+            <div class="exercise-solution" id="solution1">
+                <div class="code-example">
+                    <pre>
+class PaymentMethod {
+    process(amount) {
+        throw new Error('Must be implemented');
+    }
+
+    getFee(amount) {
+        throw new Error('Must be implemented');
+    }
+}
+
+class CreditCard extends PaymentMethod {
+    process(amount) {
+        return `Processing $${amount} via Credit Card`;
+    }
+
+    getFee(amount) {
+        return amount * 0.029;  // 2.9% fee
+    }
+}
+
+class PayPal extends PaymentMethod {
+    process(amount) {
+        return `Processing $${amount} via PayPal`;
+    }
+
+    getFee(amount) {
+        return amount * 0.034;  // 3.4% fee
+    }
+}
+
+class Bitcoin extends PaymentMethod {
+    process(amount) {
+        return `Processing $${amount} via Bitcoin`;
+    }
+
+    getFee(amount) {
+        return amount * 0.01;  // 1% fee
+    }
+}
+
+// Processor is closed for modification
+class PaymentProcessor {
+    process(paymentMethod, amount) {
+        const fee = paymentMethod.getFee(amount);
+        const total = amount + fee;
+        return {
+            message: paymentMethod.process(amount),
+            fee: fee,
+            total: total
+        };
+    }
+}
+
+// Easy to add new payment method
+class ApplePay extends PaymentMethod {
+    process(amount) {
+        return `Processing $${amount} via Apple Pay`;
+    }
+
+    getFee(amount) {
+        return amount * 0.025;  // 2.5% fee
+    }
+}
+
+const processor = new PaymentProcessor();
+console.log(processor.process(new CreditCard(), 100));
+console.log(processor.process(new Bitcoin(), 100));
+console.log(processor.process(new ApplePay(), 100));
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav">
+            <a href="srp.html">← SRP</a>
+            <a href="../../index.html">Home</a>
+            <a href="lsp.html">LSP →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 JavaScript OOP, Design Patterns & SOLID</p>
+    </footer>
+
+    <script src="../../scripts/common.js"></script>
+    <script>
+        class Customer {
+            getDiscount() {
+                throw new Error('Must be implemented');
+            }
+        }
+
+        class RegularCustomer extends Customer {
+            getDiscount() { return 0.05; }
+        }
+
+        class PremiumCustomer extends Customer {
+            getDiscount() { return 0.10; }
+        }
+
+        class VIPCustomer extends Customer {
+            getDiscount() { return 0.20; }
+        }
+
+        class GoldCustomer extends Customer {
+            getDiscount() { return 0.15; }
+        }
+
+        class DiscountCalculator {
+            calculate(customer, amount) {
+                const discount = customer.getDiscount();
+                const discountAmount = amount * discount;
+                const final = amount - discountAmount;
+                return { discount, discountAmount, final };
+            }
+        }
+
+        function calculateDiscount() {
+            const type = document.getElementById('customerType').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            if (!amount || amount <= 0) {
+                document.getElementById('discountOutput').innerHTML = 'Enter valid amount!';
+                return;
+            }
+
+            let customer;
+            switch(type) {
+                case 'regular': customer = new RegularCustomer(); break;
+                case 'premium': customer = new PremiumCustomer(); break;
+                case 'vip': customer = new VIPCustomer(); break;
+                case 'gold': customer = new GoldCustomer(); break;
+            }
+
+            const calculator = new DiscountCalculator();
+            const result = calculator.calculate(customer, amount);
+
+            document.getElementById('discountOutput').innerHTML = 
+                `Original: $${amount.toFixed(2)}<br>` +
+                `Discount: ${(result.discount * 100)}%<br>` +
+                `You save: $${result.discountAmount.toFixed(2)}<br>` +
+                `<strong>Final: $${result.final.toFixed(2)}</strong>`;
+        }
+    </script>
+</body>
+</html>
